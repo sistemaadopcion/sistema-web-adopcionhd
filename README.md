@@ -1,4 +1,4 @@
-````md
+
 # Sistema de Adopción de Mascotas 🐶🐱
 
 ## Descripción del Proyecto
