@@ -1,7 +1,10 @@
+import React from 'react';
+import Register from './components/Register';
+
 function App() {
   return (
     <div>
-      <h1>Sistema de Adopción de Mascotas</h1>
+      <Register />
     </div>
   );
 }
