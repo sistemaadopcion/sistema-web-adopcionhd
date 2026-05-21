@@ -46,29 +46,44 @@ public class UserController {
     // =========================================================
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
-        // 1. Criterio: Validación de campos obligatorios
+        // 1. Criterio Issue #2: Validación de campos obligatorios
         if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty() ||
             loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
             return ResponseEntity.badRequest().body("Todos los campos son obligatorios.");
-        }
+        }   
 
-        // 2. Criterio: Verificación de credenciales en la Base de Datos
+        // =========================================================
+        // 👑 INTERCEPCIÓN ISSUE #3: CREDENCIALES PREDEFINIDAS DEL ADMIN
+        // =========================================================
+        String adminEmail = "admin@huellitas.com";
+        String adminPassword = "admin123";
+
+        if (loginRequest.getEmail().equalsIgnoreCase(adminEmail)) {
+            if (loginRequest.getPassword().equals(adminPassword)) {
+                User adminUser = new User();
+                adminUser.setNombres("Administrador General");
+                adminUser.setEmail(adminEmail);
+                adminUser.setRole("ADMIN"); // Role clave que React leerá para el Panel Admin
+                return ResponseEntity.ok(adminUser);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta.");
+            }
+        }
+        // =========================================================
+
+        // 2. Conservación Issue #2: Flujo normal para Adoptantes
         Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
-        
-        // Criterio: Mensaje si el usuario no existe
+      
         if (userOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El usuario no existe.");
         }
 
         User user = userOptional.get();
-
-        // Criterio: Mensaje si las credenciales son incorrectas
-        // NOTA: Si usan texto plano para las pruebas, déjalo así. Si usan BCrypt, luego lo cambiamos por .matches()
         if (!user.getPassword().equals(loginRequest.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta.");
         }
 
-        // Si todo coincide, mandamos al Frontend el usuario con su ROL para que sepa a dónde redirigir
+        // Retorna el usuario normal (Adoptante) si todo coincide
         return ResponseEntity.ok(user);
     }
 }
