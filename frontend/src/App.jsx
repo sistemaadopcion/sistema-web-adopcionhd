@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Register from './components/Register';
 import Login from './components/Login';
 import Navbar from './components/Navbar'; // 👈 Importamos tu nuevo Navbar
+import Home from './components/Home';
 
 function App() {
   const [role, setRole] = useState(sessionStorage.getItem('userRole') || null);
@@ -24,6 +25,22 @@ function App() {
   const intentarAccesoForzado = () => {
     setAuthError('❌ ACCESO DENEGADO: No tienes permisos de Administrador.');
   };
+
+  // Ejemplo de cómo estructurar la sección de contenido de tu App.jsx
+const renderContent = () => {
+  switch (currentView) {
+    case 'inicio':
+      return <Home setView={setView} />; // 👈 Aquí se inyecta la Issue #5
+    case 'mascotas':
+      return <div>🐾 Catálogo de Mascotas en construcción...</div>;
+    case 'solicitudes':
+      return <div>📋 Sección de solicitudes...</div>;
+    case 'perfil':
+      return <div>👤 Perfil de Usuario...</div>;
+    default:
+      return <Home setView={setView} />;
+  }
+};
 
   // VISTA SI EL USUARIO YA INICIÓ SESIÓN (Muestra la barra de navegación)
   if (role) {

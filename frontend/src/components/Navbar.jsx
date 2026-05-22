@@ -10,75 +10,179 @@ function Navbar({ currentView, setView, onLogout }) {
     { id: 'perfil', label: '👤 Perfil' }
   ];
 
-  // Estilos embebidos responsivos inline
-  const navbarStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    background: '#2c3e50',
-    padding: '15px 30px',
-    color: 'white',
-    fontFamily: "'Segoe UI', sans-serif",
-    position: 'relative',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+  const handleNavClick = (id) => {
+    setView(id);
+    setIsOpen(false); // Cierra el menú móvil al hacer clic
   };
 
-  const logoStyle = {
-    fontSize: '20px',
-    fontWeight: 'bold',
-    cursor: 'pointer'
-  };
-
-  const menuStyle = {
-    display: 'flex',
-    gap: '15px',
-    alignItems: 'center'
-  };
-
-  const linkStyle = (id) => ({
-    background: currentView === id ? '#34495e' : 'none',
-    border: 'none',
-    color: 'white',
-    padding: '8px 16px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '15px',
-    fontWeight: currentView === id ? 'bold' : 'normal',
-    transition: 'background 0.3s'
-  });
-
-  const logoutButtonStyle = {
-    background: '#e74c3c',
-    border: 'none',
-    color: 'white',
-    padding: '8px 16px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '15px',
-    fontWeight: '600'
+  // --- Hojas de estilo inline refinadas ---
+  const styles = {
+    navContainer: {
+      background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', // Degradado premium oscuro
+      padding: '0 24px',
+      height: '70px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      position: 'relative',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+      zIndex: 1000,
+      fontFamily: "'Inter', 'Segoe UI', sans-serif"
+    },
+    logo: {
+      color: '#f8fafc',
+      fontSize: '22px',
+      fontWeight: '700',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      letterSpacing: '0.5px'
+    },
+    // Menú para pantallas de escritorio
+    menuDesktop: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+    },
+    button: (id) => ({
+      background: currentView === id ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+      border: 'none',
+      color: currentView === id ? '#38bdf8' : '#cbd5e1', // Acento celeste brillante para el activo
+      padding: '10px 16px',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '15px',
+      fontWeight: '600',
+      transition: 'all 0.25s ease',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px'
+    }),
+    logoutButton: {
+      background: '#ef4444',
+      border: 'none',
+      color: 'white',
+      padding: '10px 20px',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '15px',
+      fontWeight: '600',
+      boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
+      transition: 'all 0.25s ease',
+      marginLeft: '12px'
+    },
+    // Botón Hamburguesa móvil
+    hamburger: {
+      display: 'none', // Se controla mediante Media Queries en CSS real, aquí simulamos responsive fluido
+      flexDirection: 'column',
+      gap: '5px',
+      background: 'transparent',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '8px'
+    },
+    line: {
+      width: '25px',
+      height: '3px',
+      backgroundColor: '#f8fafc',
+      borderRadius: '2px',
+      transition: 'all 0.3s ease'
+    },
+    // Menú Desplegable Móvil
+    menuMobile: {
+      position: 'absolute',
+      top: '70px',
+      left: 0,
+      right: 0,
+      background: '#1e293b',
+      padding: '16px 24px',
+      display: isOpen ? 'flex' : 'none',
+      flexDirection: 'column',
+      gap: '12px',
+      boxShadow: '0 10px 15px rgba(0,0,0,0.2)',
+      zIndex: 999
+    }
   };
 
   return (
-    <nav style={navbarStyle}>
-      <div style={logoStyle} onClick={() => setView('inicio')}>
-        🐾 Huellitas Digitales
-      </div>
+    <>
+      <nav style={styles.navContainer}>
+        <div style={styles.logo} onClick={() => handleNavClick('inicio')}>
+          <span style={{ fontSize: '24px' }}>🐾</span> Huellitas Digitales
+        </div>
 
-      <div style={menuStyle}>
+        {/* Desktop Links (Se renderizan de forma limpia) */}
+        <div className="nav-desktop" style={styles.menuDesktop}>
+          {navOptions.map((option) => (
+            <button
+              key={option.id}
+              onClick={() => handleNavClick(option.id)}
+              style={styles.button(option.id)}
+              onMouseEnter={(e) => {
+                if(currentView !== option.id) {
+                  e.target.style.color = '#f8fafc';
+                  e.target.style.background = 'rgba(255,255,255,0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if(currentView !== option.id) {
+                  e.target.style.color = '#cbd5e1';
+                  e.target.style.background = 'transparent';
+                }
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+          <button 
+            onClick={onLogout} 
+            style={styles.logoutButton}
+            onMouseEnter={(e) => e.target.style.background = '#dc2626'}
+            onMouseLeave={(e) => e.target.style.background = '#ef4444'}
+          >
+            
+         Cerrar sesión
+
+          </button>
+        </div>
+
+        {/* Botón de control responsive simulado (Hamburguesa) */}
+        <button 
+          className="nav-hamburger" 
+          style={styles.hamburger} 
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div style={{...styles.line, transform: isOpen ? 'rotate(45deg) translate(6px, 5px)' : 'none'}} />
+          <div style={{...styles.line, opacity: isOpen ? 0 : 1}} />
+          <div style={{...styles.line, transform: isOpen ? 'rotate(-45deg) translate(6px, -5px)' : 'none'}} />
+        </button>
+      </nav>
+
+      {/* Mobile Links (Desplegable) */}
+      <div style={styles.menuMobile}>
         {navOptions.map((option) => (
           <button
             key={option.id}
-            onClick={() => setView(option.id)}
-            style={linkStyle(option.id)}
+            onClick={() => handleNavClick(option.id)}
+            style={{...styles.button(option.id), width: '100%', justifyContent: 'flex-start'}}
           >
             {option.label}
           </button>
         ))}
-        <button onClick={onLogout} style={logoutButtonStyle}>
+        <button onClick={onLogout} style={{...styles.logoutButton, marginLeft: 0, width: '100%'}}>
           🚪 Cerrar sesión
         </button>
       </div>
-    </nav>
+
+      {/* Estilos CSS inyectados para resolver el responsive real sin romper los inline */}
+      <style>{`
+        @media (max-width: 768px) {
+          .nav-desktop { display: none !important; }
+          .nav-hamburger { display: flex !important; }
+        }
+      `}</style>
+    </>
   );
 }
 
