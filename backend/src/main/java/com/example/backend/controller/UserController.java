@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000") // Conexión con React
+@CrossOrigin(origins = "http://localhost:5173") // Conexión con React
 public class UserController {
 
     @Autowired
@@ -55,7 +55,7 @@ public class UserController {
         // =========================================================
         // 👑 INTERCEPCIÓN ISSUE #3: CREDENCIALES PREDEFINIDAS DEL ADMIN
         // =========================================================
-        String adminEmail = "admin@huellitas.com";
+        String adminEmail = "admin@canmartin.com"; // 👈 Cambiado para alinearse con el script de MySQL
         String adminPassword = "admin123";
 
         if (loginRequest.getEmail().equalsIgnoreCase(adminEmail)) {
