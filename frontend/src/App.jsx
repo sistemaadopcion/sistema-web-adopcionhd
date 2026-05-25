@@ -3,6 +3,7 @@ import Register from './components/Register';
 import Login from './components/Login';
 import Navbar from './components/Navbar'; 
 import Home from './components/Home';
+import Mascotas from './components/Mascotas'; // 👈 Importamos tu Issue #6
 
 function App() {
   // 🛡️ MODIFICACIÓN 1: Forzamos a MAYÚSCULAS el rol al recuperar del almacenamiento local
@@ -61,12 +62,7 @@ function App() {
           </div>
         );
       case 'mascotas':
-        return (
-          <div style={{ backgroundColor: '#ffffff', padding: '30px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', maxWidth: '700px', margin: '0 auto' }}>
-            <h2>🐾 Catálogo de Mascotas en Adopción</h2>
-            <p>Aquí se listará la galería de perritos y gatitos rescatados listos para un hogar.</p>
-          </div>
-        );
+        return <Mascotas />;
       case 'solicitudes':
         return (
           <div style={{ backgroundColor: '#ffffff', padding: '30px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', maxWidth: '700px', margin: '0 auto' }}>
