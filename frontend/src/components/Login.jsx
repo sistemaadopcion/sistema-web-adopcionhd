@@ -19,13 +19,15 @@ const Login = ({ onLoginSuccess }) => {
 
     try {
       const user = await loginService(formData);
-      
-      // Guardamos temporalmente los datos en el navegador para simular la sesión
-      sessionStorage.setItem('userRole', user.rol); // Guarda si es ADMIN o ADOPTANTE
+
+      // 🛡️ Guardamos el rol forzándolo a MAYÚSCULAS para evitar fallas de formato (ej: 'Admin' -> 'ADMIN')
+      const formatoRol = user.rol ? user.rol.toUpperCase() : 'ADOPTANTE';
+
+      sessionStorage.setItem('userRole', formatoRol);
       sessionStorage.setItem('userName', user.nombres);
       
-      // Notificamos a la App que el login fue exitoso para que redirija
-      onLoginSuccess(user.rol);
+     // Notificamos a la App con el rol estandarizado
+      onLoginSuccess(formatoRol);
     } catch (err) {
       // Criterio: Manejo de errores (Usuario no existe / Credenciales incorrectas)
       setError(err.message || 'Error al conectar con el servidor.');

@@ -5,14 +5,18 @@ import Navbar from './components/Navbar';
 import Home from './components/Home';
 
 function App() {
-  // Aseguramos capturar correctamente el rol desde el backend (mapeado como role o rol)
-  const [role, setRole] = useState(sessionStorage.getItem('userRole') || null);
+  // 🛡️ MODIFICACIÓN 1: Forzamos a MAYÚSCULAS el rol al recuperar del almacenamiento local
+  const [role, setRole] = useState(() => {
+    const savedRole = sessionStorage.getItem('userRole');
+    return savedRole ? savedRole.toUpperCase() : null;
+  });
+  
   const [view, setView] = useState('login'); 
   const [authError, setAuthError] = useState('');
 
+  // 🛡️ MODIFICACIÓN 2: Estandarizamos el rol entrante del Login a MAYÚSCULAS
   const handleLoginSuccess = (userRole) => {
-    // Si el backend lo manda en el objeto como role, lo salvaguardamos
-    const finalRole = userRole || 'ADOPTANTE'; 
+    const finalRole = userRole ? userRole.toUpperCase() : 'ADOPTANTE'; 
     setRole(finalRole);
     setView('inicio'); 
     setAuthError('');
@@ -35,11 +39,11 @@ function App() {
       case 'inicio':
         return (
           <div>
+            {/* 👑 Ahora sí coincidirá perfectamente con 'ADMIN' aunque venga 'Admin' de la BD */}
             {role === 'ADMIN' ? (
               <div style={{ backgroundColor: '#fff3cd', padding: '40px', borderRadius: '12px', border: '1px solid #ffeeba', maxWidth: '600px', margin: '0 auto' }}>
                 <h1>👑 Panel Administrativo</h1>
                 <p>🔑 Sesión: Administrador General del Albergue</p>
-                {/* Aquí puedes inyectar componentes del Issue #3 si lo requieres */}
               </div>
             ) : (
               <div style={{ backgroundColor: '#e2f0d9', padding: '40px', borderRadius: '12px', border: '1px solid #c5e1a5', maxWidth: '600px', margin: '0 auto' }}>
@@ -50,7 +54,7 @@ function App() {
                 </button>
               </div>
             )}
-            {/* 👈 AQUÍ INYECTAMOS TU COMPONENTE HOME DEL ISSUE #5 */}
+            {/* 👈 INYECCIÓN DE LA HOME (ISSUE #5) */}
             <div style={{ marginTop: '30px' }}>
               <Home setView={setView} />
             </div>
@@ -102,7 +106,7 @@ function App() {
     );
   }
 
-  // VISTA 2: VISTA PÚBLICA (LOGIN / REGISTRO CORREGIDO CON CONTROL DE FLUJO EXPLICITO)
+  // VISTA 2: VISTA PÚBLICA (LOGIN / REGISTRO)
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f9', padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
@@ -110,7 +114,7 @@ function App() {
         <button onClick={() => setView('register')} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', fontWeight: view === 'register' ? 'bold' : 'normal', textDecoration: view === 'register' ? 'underline' : 'none' }}>¿No tienes cuenta? Regístrate</button>
       </div>
 
-      {/* 🔐 Control explícito: Evitamos que caiga en Register por descarte */}
+      {/* 🔐 Control explícito */}
       {view === 'login' && <Login onLoginSuccess={handleLoginSuccess} />}
       {view === 'register' && <Register />}
     </div>
