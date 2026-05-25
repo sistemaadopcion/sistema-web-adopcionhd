@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Navbar from './components/Navbar'; 
 import Home from './components/Home';
 import Mascotas from './components/Mascotas'; // 👈 Importamos tu Issue #6
+import Solicitudes from './components/Solicitudes';
 
 function App() {
   // 🛡️ MODIFICACIÓN 1: Forzamos a MAYÚSCULAS el rol al recuperar del almacenamiento local
@@ -34,6 +35,7 @@ function App() {
     setAuthError('❌ ACCESO DENEGADO: No tienes permisos de Administrador.');
   };
 
+  const [currentSection, setCurrentSection] = useState('inicio');
   // 🏛️ RENDERING DINÁMICO INTEGRADO CON TUS COMPONENTES REALES
   const renderContent = () => {
     switch (view) {
@@ -61,15 +63,22 @@ function App() {
             </div>
           </div>
         );
+        const renderSection = () => {
+    switch (currentSection) {
+      case 'mascotas':
+        return <Mascotas />;
+      case 'solicitudes': // 👈 Este string debe activarse cuando presionas "Mis Solicitudes" en el menú
+        return <Solicitudes />;
+      case 'perfil':
+        return <div style={{ padding: '20px' }}>Vista Perfil (En construcción)</div>;
+      default:
+        return <Inicio />;
+      }
+     };
       case 'mascotas':
         return <Mascotas />;
       case 'solicitudes':
-        return (
-          <div style={{ backgroundColor: '#ffffff', padding: '30px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', maxWidth: '700px', margin: '0 auto' }}>
-            <h2>📋 Estado de mis Solicitudes</h2>
-            <p>Hitos de tus procesos de adopción en evaluación.</p>
-          </div>
-        );
+        return <Solicitudes />;   
       case 'perfil':
         return (
           <div style={{ backgroundColor: '#ffffff', padding: '30px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', maxWidth: '700px', margin: '0 auto' }}>
@@ -81,6 +90,7 @@ function App() {
         return <Home setView={setView} />;
     }
   };
+  
 
   // VISTA 1: SI EL USUARIO YA INICIÓ SESIÓN (Muestra la barra de navegación y paneles privados)
   if (role) {
@@ -115,6 +125,14 @@ function App() {
       {view === 'register' && <Register />}
     </div>
   );
+
+  return (
+    <div>
+      {/* Tu Header / Navbar que cambia el estado actual de la sección */}
+      {renderSection()}
+    </div>
+  );
+
 }
 
 export default App;
