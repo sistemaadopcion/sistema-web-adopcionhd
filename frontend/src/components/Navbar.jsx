@@ -12,13 +12,12 @@ function Navbar({ currentView, setView, onLogout }) {
 
   const handleNavClick = (id) => {
     setView(id);
-    setIsOpen(false); // Cierra el menú móvil al hacer clic
+    setIsOpen(false);
   };
 
-  // --- Hojas de estilo inline refinadas ---
   const styles = {
     navContainer: {
-      background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', // Degradado premium oscuro
+      background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
       padding: '0 24px',
       height: '70px',
       display: 'flex',
@@ -39,7 +38,6 @@ function Navbar({ currentView, setView, onLogout }) {
       gap: '8px',
       letterSpacing: '0.5px'
     },
-    // Menú para pantallas de escritorio
     menuDesktop: {
       display: 'flex',
       alignItems: 'center',
@@ -48,7 +46,7 @@ function Navbar({ currentView, setView, onLogout }) {
     button: (id) => ({
       background: currentView === id ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
       border: 'none',
-      color: currentView === id ? '#38bdf8' : '#cbd5e1', // Acento celeste brillante para el activo
+      color: currentView === id ? '#38bdf8' : '#cbd5e1',
       padding: '10px 16px',
       borderRadius: '8px',
       cursor: 'pointer',
@@ -72,9 +70,8 @@ function Navbar({ currentView, setView, onLogout }) {
       transition: 'all 0.25s ease',
       marginLeft: '12px'
     },
-    // Botón Hamburguesa móvil
     hamburger: {
-      display: 'none', // Se controla mediante Media Queries en CSS real, aquí simulamos responsive fluido
+      display: 'none',
       flexDirection: 'column',
       gap: '5px',
       background: 'transparent',
@@ -89,7 +86,6 @@ function Navbar({ currentView, setView, onLogout }) {
       borderRadius: '2px',
       transition: 'all 0.3s ease'
     },
-    // Menú Desplegable Móvil
     menuMobile: {
       position: 'absolute',
       top: '70px',
@@ -112,42 +108,28 @@ function Navbar({ currentView, setView, onLogout }) {
           <span style={{ fontSize: '24px' }}>🐾</span> Huellitas Digitales
         </div>
 
-        {/* Desktop Links (Se renderizan de forma limpia) */}
         <div className="nav-desktop" style={styles.menuDesktop}>
           {navOptions.map((option) => (
             <button
               key={option.id}
               onClick={() => handleNavClick(option.id)}
               style={styles.button(option.id)}
-              onMouseEnter={(e) => {
-                if(currentView !== option.id) {
-                  e.target.style.color = '#f8fafc';
-                  e.target.style.background = 'rgba(255,255,255,0.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if(currentView !== option.id) {
-                  e.target.style.color = '#cbd5e1';
-                  e.target.style.background = 'transparent';
-                }
-              }}
             >
               {option.label}
             </button>
           ))}
+          
+          {/* 🚀 Botón integrado con estilos existentes */}
           <button 
             onClick={onLogout} 
             style={styles.logoutButton}
             onMouseEnter={(e) => e.target.style.background = '#dc2626'}
             onMouseLeave={(e) => e.target.style.background = '#ef4444'}
           >
-            
-         Cerrar sesión
-
+            Cerrar sesión
           </button>
         </div>
 
-        {/* Botón de control responsive simulado (Hamburguesa) */}
         <button 
           className="nav-hamburger" 
           style={styles.hamburger} 
@@ -159,7 +141,6 @@ function Navbar({ currentView, setView, onLogout }) {
         </button>
       </nav>
 
-      {/* Mobile Links (Desplegable) */}
       <div style={styles.menuMobile}>
         {navOptions.map((option) => (
           <button
@@ -170,12 +151,12 @@ function Navbar({ currentView, setView, onLogout }) {
             {option.label}
           </button>
         ))}
+        {/* 🚀 Botón móvil integrado */}
         <button onClick={onLogout} style={{...styles.logoutButton, marginLeft: 0, width: '100%'}}>
           🚪 Cerrar sesión
         </button>
       </div>
 
-      {/* Estilos CSS inyectados para resolver el responsive real sin romper los inline */}
       <style>{`
         @media (max-width: 768px) {
           .nav-desktop { display: none !important; }

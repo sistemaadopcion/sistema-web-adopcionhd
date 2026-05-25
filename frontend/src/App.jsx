@@ -3,11 +3,10 @@ import Register from './components/Register';
 import Login from './components/Login';
 import Navbar from './components/Navbar'; 
 import Home from './components/Home';
-import Mascotas from './components/Mascotas'; // 👈 Importamos tu Issue #6
+import Mascotas from './components/Mascotas';
 import Solicitudes from './components/Solicitudes';
 
 function App() {
-  // 🛡️ MODIFICACIÓN 1: Forzamos a MAYÚSCULAS el rol al recuperar del almacenamiento local
   const [role, setRole] = useState(() => {
     const savedRole = sessionStorage.getItem('userRole');
     return savedRole ? savedRole.toUpperCase() : null;
@@ -16,7 +15,6 @@ function App() {
   const [view, setView] = useState('login'); 
   const [authError, setAuthError] = useState('');
 
-  // 🛡️ MODIFICACIÓN 2: Estandarizamos el rol entrante del Login a MAYÚSCULAS
   const handleLoginSuccess = (userRole) => {
     const finalRole = userRole ? userRole.toUpperCase() : 'ADOPTANTE'; 
     setRole(finalRole);
@@ -24,25 +22,23 @@ function App() {
     setAuthError('');
   };
 
-  const handleLogout = () => {
+  const handleCerrarSesion = () => {
     sessionStorage.clear();
-    setRole(null);
-    setView('login');
-    setAuthError('');
+    localStorage.removeItem('token');
+    setRole(null); 
+    setView('login'); 
+    console.log("Sesión cerrada y estados reseteados");
   };
-
+  
   const intentarAccesoForzado = () => {
     setAuthError('❌ ACCESO DENEGADO: No tienes permisos de Administrador.');
   };
 
-  const [currentSection, setCurrentSection] = useState('inicio');
-  // 🏛️ RENDERING DINÁMICO INTEGRADO CON TUS COMPONENTES REALES
   const renderContent = () => {
     switch (view) {
       case 'inicio':
         return (
           <div>
-            {/* 👑 Ahora sí coincidirá perfectamente con 'ADMIN' aunque venga 'Admin' de la BD */}
             {role === 'ADMIN' ? (
               <div style={{ backgroundColor: '#fff3cd', padding: '40px', borderRadius: '12px', border: '1px solid #ffeeba', maxWidth: '600px', margin: '0 auto' }}>
                 <h1>👑 Panel Administrativo</h1>
@@ -57,24 +53,11 @@ function App() {
                 </button>
               </div>
             )}
-            {/* 👈 INYECCIÓN DE LA HOME (ISSUE #5) */}
             <div style={{ marginTop: '30px' }}>
               <Home setView={setView} />
             </div>
           </div>
         );
-        const renderSection = () => {
-    switch (currentSection) {
-      case 'mascotas':
-        return <Mascotas />;
-      case 'solicitudes': // 👈 Este string debe activarse cuando presionas "Mis Solicitudes" en el menú
-        return <Solicitudes />;
-      case 'perfil':
-        return <div style={{ padding: '20px' }}>Vista Perfil (En construcción)</div>;
-      default:
-        return <Inicio />;
-      }
-     };
       case 'mascotas':
         return <Mascotas />;
       case 'solicitudes':
@@ -90,49 +73,41 @@ function App() {
         return <Home setView={setView} />;
     }
   };
-  
 
-  // VISTA 1: SI EL USUARIO YA INICIÓ SESIÓN (Muestra la barra de navegación y paneles privados)
+  // --- ESTRUCTURA FINAL: RENDERIZADO CONDICIONAL ---
+  
+  // Si hay rol, mostramos la interfaz privada
   if (role) {
     return (
       <div style={{ backgroundColor: '#f8f9fa', minHeight: '100vh', fontFamily: "'Segoe UI', sans-serif" }}>
-        <Navbar currentView={view} setView={setView} onLogout={handleLogout} />
-
+        <Navbar currentView={view} setView={setView} onLogout={handleCerrarSesion} />
+        
         <div style={{ padding: '40px', textAlign: 'center' }}>
           {authError && (
             <div style={{ backgroundColor: '#fdf2f2', color: '#ec5b5b', padding: '15px', borderRadius: '8px', border: '1px solid #fbd5d5', maxWidth: '600px', margin: '0 auto 20px auto', fontWeight: 'bold' }}>
               {authError}
             </div>
           )}
-
-          {/* Ejecutamos el renderizador dinámico */}
           {renderContent()}
         </div>
       </div>
     );
   }
 
-  // VISTA 2: VISTA PÚBLICA (LOGIN / REGISTRO)
+  // Si NO hay rol, mostramos la interfaz pública (Login/Registro)
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f9', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
-        <button onClick={() => setView('login')} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', fontWeight: view === 'login' ? 'bold' : 'normal', textDecoration: view === 'login' ? 'underline' : 'none' }}>Ir al Login</button>
-        <button onClick={() => setView('register')} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', fontWeight: view === 'register' ? 'bold' : 'normal', textDecoration: view === 'register' ? 'underline' : 'none' }}>¿No tienes cuenta? Regístrate</button>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f9', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px' }}>
+          <button onClick={() => setView('login')} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', fontWeight: view === 'login' ? 'bold' : 'normal' }}>Ir al Login</button>
+          <button onClick={() => setView('register')} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', fontWeight: view === 'register' ? 'bold' : 'normal' }}>Registrarse</button>
+        </div>
+
+        {view === 'login' && <Login onLoginSuccess={handleLoginSuccess} />}
+        {view === 'register' && <Register />}
       </div>
-
-      {/* 🔐 Control explícito */}
-      {view === 'login' && <Login onLoginSuccess={handleLoginSuccess} />}
-      {view === 'register' && <Register />}
     </div>
   );
-
-  return (
-    <div>
-      {/* Tu Header / Navbar que cambia el estado actual de la sección */}
-      {renderSection()}
-    </div>
-  );
-
 }
 
 export default App;
