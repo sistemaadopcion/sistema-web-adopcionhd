@@ -19,16 +19,13 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* Registro */}
         <Route path="/registro" element={<Register />} />
 
-        {/* Redirección */}
         <Route
           path="/"
           element={<Navigate to="/admin/dashboard" />}
         />
 
-        {/* Layout Admin */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="mascotas" element={<Mascotas />} />

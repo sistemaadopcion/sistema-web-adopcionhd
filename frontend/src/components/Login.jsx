@@ -24,7 +24,7 @@ const Login = ({ onLoginSuccess }) => {
       const formatoRol = user.rol ? user.rol.toUpperCase() : 'ADOPTANTE';
 
       sessionStorage.setItem('userRole', formatoRol);
-      sessionStorage.setItem('userName', user.nombres);
+      sessionStorage.setItem('userName', user.nombre);
       
      // Notificamos a la App con el rol estandarizado
       onLoginSuccess(formatoRol);
