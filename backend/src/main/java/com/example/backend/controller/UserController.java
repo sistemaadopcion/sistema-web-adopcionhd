@@ -12,50 +12,46 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:5173") // Conexión con React
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     @Autowired
-    private UserService userService;//ISSUE #1:
+    private UserService userService;
+
     @Autowired
-    private UserRepository userRepository;//ISSUE #2:
-    // =========================================================
-    // 🛡️ BLOQUE ISSUE #1: AQUÍ YA TIENES TU REGISTRO (¡NO LO BORRES!)
-    // =========================================================
+    private UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<?> registrar(@RequestBody User user) {
         try {
-            // Validaciones de criterios de aceptación de la Issue
+
             if (user.getTelefono() == null || user.getTelefono().length() != 9) {
                 return ResponseEntity.badRequest().body("El teléfono debe tener exactamente 9 dígitos.");
             }
+
             if (!user.getEmail().contains("@")) {
                 return ResponseEntity.badRequest().body("El formato del correo es inválido.");
             }
 
             User nuevoUsuario = userService.registrarUsuario(user);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
-            
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    // =========================================================
-    // 🔐 BLOQUE ISSUE #2: PEGA ESTO AQUÍ ABAJO (MÉTODO NUEVO)
-    // =========================================================
+
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
-        // 1. Criterio Issue #2: Validación de campos obligatorios
+
+        // Validación de campos obligatorios
         if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty() ||
             loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
             return ResponseEntity.badRequest().body("Todos los campos son obligatorios.");
-        }   
+        }
 
-        // =========================================================
-        // 👑 INTERCEPCIÓN ISSUE #3: CREDENCIALES PREDEFINIDAS DEL ADMIN
-        // =========================================================
-        String adminEmail = "admin@canmartin.com"; // 👈 Cambiado para alinearse con el script de MySQL
+        // Credenciales predefinidas para administrador
+        String adminEmail = "admin@canmartin.com";
         String adminPassword = "admin123";
 
         if (loginRequest.getEmail().equalsIgnoreCase(adminEmail)) {
@@ -63,27 +59,30 @@ public class UserController {
                 User adminUser = new User();
                 adminUser.setNombres("Administrador General");
                 adminUser.setEmail(adminEmail);
-                adminUser.setRole("ADMIN"); // Role clave que React leerá para el Panel Admin
+                adminUser.setRole("ADMIN");
+
                 return ResponseEntity.ok(adminUser);
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Contraseña incorrecta.");
             }
         }
-        // =========================================================
 
-        // 2. Conservación Issue #2: Flujo normal para Adoptantes
+        // Flujo normal para adoptantes
         Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
-      
+
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El usuario no existe.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("El usuario no existe.");
         }
 
         User user = userOptional.get();
+
         if (!user.getPassword().equals(loginRequest.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Contraseña incorrecta.");
         }
 
-        // Retorna el usuario normal (Adoptante) si todo coincide
         return ResponseEntity.ok(user);
     }
 }
