@@ -1,8 +1,43 @@
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
+import AdminLayout from "./layouts/AdminLayout";
+
+import AdminDashboard from "./pages/AdminDashboard";
+import Mascotas from "./pages/Mascotas";
+import Solicitudes from "./pages/Solicitudes";
+import Usuarios from "./pages/Usuarios";
+
+import Register from "./components/Register";
+
 function App() {
   return (
-    <div>
-      <h1>Sistema de Adopción de Mascotas</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+
+        {/* Registro */}
+        <Route path="/registro" element={<Register />} />
+
+        {/* Redirección */}
+        <Route
+          path="/"
+          element={<Navigate to="/admin/dashboard" />}
+        />
+
+        {/* Layout Admin */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="mascotas" element={<Mascotas />} />
+          <Route path="solicitudes" element={<Solicitudes />} />
+          <Route path="usuarios" element={<Usuarios />} />
+        </Route>
+
+      </Routes>
+    </BrowserRouter>
   );
 }
 
