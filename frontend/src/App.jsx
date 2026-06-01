@@ -12,10 +12,15 @@ import Mascotas from "./pages/Mascotas";
 import Solicitudes from "./pages/Solicitudes";
 import Usuarios from "./pages/Usuarios";
 
+import Register from "./components/Register";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+        {/* Registro */}
+        <Route path="/registro" element={<Register />} />
 
         {/* Redirección */}
         <Route
@@ -25,19 +30,15 @@ function App() {
 
         {/* Layout Admin */}
         <Route path="/admin" element={<AdminLayout />}>
-
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="mascotas" element={<Mascotas />} />
           <Route path="solicitudes" element={<Solicitudes />} />
           <Route path="usuarios" element={<Usuarios />} />
-
         </Route>
 
       </Routes>
     </BrowserRouter>
   );
 }
-
-
 
 export default App;
