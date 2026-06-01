@@ -201,11 +201,30 @@ cd backend
 mvn spring-boot:run
 ```
 
-Servidor local:
+## ⚙️ Configuración de Base de Datos
 
-```text
-http://localhost:8080/
+### Requisitos
+- MySQL 8.0 corriendo en puerto 3306
+- MySQL Workbench o phpMyAdmin
+
+### Pasos para configurar
+1. Abrir MySQL Workbench
+2. Abrir el archivo `docs/database/init.sql`
+3. Ejecutar el script completo con `Ctrl + Shift + Enter`
+4. Verificar que se creó la base de datos `canmartin_db`
+
+### Configurar credenciales locales
+Editar `backend/src/main/resources/application.properties`:
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/canmartin_db
+spring.datasource.username=root
+spring.datasource.password=TU_PASSWORD
 ```
+
+### Tablas creadas
+- `usuarios` — adoptantes y administradores
+- `mascotas` — catálogo de mascotas disponibles
+- `solicitudes_adopcion` — solicitudes de adopción
 
 ---
 
