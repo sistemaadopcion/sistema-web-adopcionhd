@@ -40,17 +40,25 @@ public class UsuarioService {
     }
 
     // ─── Actualizar usuario ────────────────────────────────
+    // ─── Actualizar usuario (con lógica de contraseña inteligente) ──
     public Usuario actualizar(Integer id, Usuario usuarioActualizado) {
         Usuario usuarioExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Usuario no encontrado con ID: " + id));
 
+        // Actualizamos campos generales
         usuarioExistente.setNombre(usuarioActualizado.getNombre());
         usuarioExistente.setApellido(usuarioActualizado.getApellido());
         usuarioExistente.setTelefono(usuarioActualizado.getTelefono());
         usuarioExistente.setDireccion(usuarioActualizado.getDireccion());
         usuarioExistente.setRol(usuarioActualizado.getRol());
         usuarioExistente.setEstado(usuarioActualizado.getEstado());
+
+        // LÓGICA INTELIGENTE:
+        // Solo actualizamos la contraseña si el frontend envió una nueva
+        if (usuarioActualizado.getContrasena() != null && !usuarioActualizado.getContrasena().trim().isEmpty()) {
+            usuarioExistente.setContrasena(usuarioActualizado.getContrasena().trim());
+        }
 
         return usuarioRepository.save(usuarioExistente);
     }
@@ -68,4 +76,5 @@ public class UsuarioService {
     public List<Usuario> listarPorRol(Usuario.RolUsuario rol) {
         return usuarioRepository.findByRol(rol);
     }
+
 }

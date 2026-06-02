@@ -1,11 +1,14 @@
-const API_URL = "http://localhost:8080/api/users";
+const API_URL = "http://localhost:8080/api/usuarios";
+
+// ─── AUTENTICACIÓN Y REGISTRO ──────────────────────────
 
 export const registerService = async (userData) => {
-  const response = await fetch(`${API_URL}/register`, {
+  const response = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
   });
+  
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(errorText);
@@ -16,17 +19,55 @@ export const registerService = async (userData) => {
 export const loginService = async (loginData) => {
   const response = await fetch(`${API_URL}/login`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(loginData),
   });
-
-  // Si el backend responde con error (404 si no existe, 401 si la clave está mal)
+  
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText); // Captura el mensaje exacto del backend
+    throw new Error(errorText);
   }
+  return await response.json(); 
+};
 
-  return await response.json(); // Retorna el objeto del usuario con su ROL
+// ─── GESTIÓN DE USUARIOS ───────────────────────────────
+
+export const obtenerUsuarios = async () => {
+  const response = await fetch(API_URL, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" }
+  });
+  
+  if (!response.ok) throw new Error("Error al obtener la lista de usuarios");
+  return await response.json();
+};
+
+export const obtenerUsuarioPorId = async (id) => {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" }
+  });
+  
+  if (!response.ok) throw new Error("Error al obtener el usuario");
+  return await response.json();
+};
+
+export const actualizarUsuario = async (id, userData) => {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData),
+  });
+  
+  if (!response.ok) throw new Error("Error al actualizar el usuario");
+  return await response.json();
+};
+
+export const eliminarUsuario = async (id) => {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "DELETE"
+  });
+  
+  if (!response.ok) throw new Error("Error al eliminar el usuario");
+  return true;
 };

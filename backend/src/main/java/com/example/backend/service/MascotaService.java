@@ -5,6 +5,7 @@ import com.example.backend.repository.MascotaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays; // Importante para crear la lista de estados
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,15 @@ public class MascotaService {
     @Autowired
     private MascotaRepository mascotaRepository;
 
+    // ─── Listar para Catálogo (NUEVO MÉTODO) ───────────────
+    // Muestra mascotas DISPONIBLES y EN_PROCESO
+    public List<Mascota> listarParaCatalogo() {
+        return mascotaRepository.findByEstadoIn(Arrays.asList(
+                Mascota.EstadoMascota.DISPONIBLE, 
+                Mascota.EstadoMascota.EN_PROCESO
+        ));
+    }
+
     // ─── Registrar nueva mascota ───────────────────────────
     public Mascota registrar(Mascota mascota) {
         return mascotaRepository.save(mascota);
@@ -22,12 +32,6 @@ public class MascotaService {
     // ─── Listar todas las mascotas ─────────────────────────
     public List<Mascota> listarTodas() {
         return mascotaRepository.findAll();
-    }
-
-    // ─── Listar mascotas disponibles ───────────────────────
-    public List<Mascota> listarDisponibles() {
-        return mascotaRepository.findByEstado(
-                Mascota.EstadoMascota.DISPONIBLE);
     }
 
     // ─── Buscar mascota por ID ─────────────────────────────
@@ -43,8 +47,7 @@ public class MascotaService {
     // ─── Actualizar mascota ────────────────────────────────
     public Mascota actualizar(Integer id, Mascota mascotaActualizada) {
         Mascota mascotaExistente = mascotaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Mascota no encontrada con ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + id));
 
         mascotaExistente.setNombre(mascotaActualizada.getNombre());
         mascotaExistente.setEspecie(mascotaActualizada.getEspecie());
@@ -62,8 +65,7 @@ public class MascotaService {
     // ─── Cambiar estado de mascota ─────────────────────────
     public Mascota cambiarEstado(Integer id, Mascota.EstadoMascota nuevoEstado) {
         Mascota mascota = mascotaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Mascota no encontrada con ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + id));
 
         mascota.setEstado(nuevoEstado);
         return mascotaRepository.save(mascota);
@@ -72,8 +74,7 @@ public class MascotaService {
     // ─── Eliminar mascota ──────────────────────────────────
     public void eliminar(Integer id) {
         if (!mascotaRepository.existsById(id)) {
-            throw new RuntimeException(
-                    "Mascota no encontrada con ID: " + id);
+            throw new RuntimeException("Mascota no encontrada con ID: " + id);
         }
         mascotaRepository.deleteById(id);
     }

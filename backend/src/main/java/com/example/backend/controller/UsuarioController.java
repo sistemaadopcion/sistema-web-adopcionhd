@@ -81,4 +81,25 @@ public class UsuarioController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // ─── POST: Iniciar Sesión ──────────────────────────────
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Usuario loginRequest) {
+        // Buscamos ignorando espacios accidentales en el correo
+        Optional<Usuario> usuarioOpt = usuarioService.buscarPorCorreo(loginRequest.getCorreo().trim());
+
+        if (usuarioOpt.isPresent()) {
+            Usuario user = usuarioOpt.get();
+            // Comparamos usando .trim() para limpiar espacios invisibles de la base de
+            // datos
+            if (user.getContrasena().trim().equals(loginRequest.getContrasena().trim())) {
+                return ResponseEntity.ok(user);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+    }
+
+    
 }
