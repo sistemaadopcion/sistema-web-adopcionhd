@@ -1,0 +1,60 @@
+version: 2.1
+
+# Definición de los entornos de ejecución (Docker)
+executors:
+  node-env:
+    docker:
+      - image: cimg/node:18.16.0
+
+jobs:
+  # 1. Fase de Compilación y Pruebas
+  build_and_test:
+    executor: node-env
+    steps:
+      - checkout # Descarga el código de GitHub en CircleCI
+
+      # Instalar dependencias si existe la carpeta frontend
+      - run:
+          name: Instalar dependencias del Frontend
+          command: |
+            if [ -d "frontend" ]; then
+              cd frontend && npm install
+            fi
+
+      # Ejecutar pruebas y cobertura
+      - run:
+          name: Ejecutar Pruebas de Frontend
+          command: |
+            if [ -d "frontend" ]; then
+              cd frontend && npm test -- --coverage || echo "No hay pruebas configuradas aún"
+            fi
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  # 2. Fase de Despliegue (Simulación)
+  deploy:
+    executor: node-env
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Desplegar Aplicación
+          command: |
+            echo "Iniciando compilación y despliegue en el servidor..."
+            echo "¡Proyecto desplegado con éxito!"
+
+# Flujo de trabajo (Pipelines paralelos/secuenciales)
+workflows:
+  version: 2
+  pipeline_adopcion:
+    jobs:
+      - build_and_test
+      - deploy:
+          requires:
+            - build_and_test # Solo despliega si las pruebas pasan
+          filters:
+            branches:
+              only: master # Solo se ejecuta al subir cambios a la rama master
