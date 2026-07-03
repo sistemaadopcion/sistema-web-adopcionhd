@@ -1,3 +1,5 @@
+import { authFetch } from "./apiClient";
+
 const API_URL = "http://localhost:8080/api/mascotas";
 
 // ─── GET: Listar todas las mascotas (Útil para el Dashboard) ────
@@ -11,7 +13,7 @@ export const obtenerTodasLasMascotas = async () => {
     const errorText = await response.text();
     throw new Error(errorText);
   }
-  
+
   return await response.json();
 };
 
@@ -26,13 +28,13 @@ export const obtenerMascotasDisponibles = async () => {
     const errorText = await response.text();
     throw new Error(errorText);
   }
-  
+
   return await response.json();
 };
 
 // ─── POST: Registrar nueva mascota ─────────────────────
 export const registrarMascota = async (mascotaData) => {
-  const response = await fetch(API_URL, {
+  const response = await authFetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(mascotaData),
@@ -42,13 +44,13 @@ export const registrarMascota = async (mascotaData) => {
     const errorText = await response.text();
     throw new Error(errorText);
   }
-  
+
   return await response.json();
-}; 
+};
 
 // ─── PUT: Actualizar mascota ──────────────────────────
 export const actualizarMascota = async (id, mascotaData) => {
-  const response = await fetch(`${API_URL}/${id}`, {
+  const response = await authFetch(`${API_URL}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(mascotaData),
@@ -58,13 +60,13 @@ export const actualizarMascota = async (id, mascotaData) => {
     const errorText = await response.text();
     throw new Error(errorText);
   }
-  
+
   return await response.json();
 };
 
 // ─── DELETE: Eliminar mascota ──────────────────────────
 export const eliminarMascota = async (id) => {
-  const response = await fetch(`${API_URL}/${id}`, {
+  const response = await authFetch(`${API_URL}/${id}`, {
     method: "DELETE",
   });
 
@@ -72,6 +74,6 @@ export const eliminarMascota = async (id) => {
     const errorText = await response.text();
     throw new Error(errorText);
   }
-  
+
   return true;
 };

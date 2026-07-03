@@ -19,7 +19,8 @@ const Login = ({ onLoginSuccess }) => {
 
     try {
       const user = await loginService(formData);
-      sessionStorage.setItem("userId", user.id); 
+      sessionStorage.setItem("token", user.token);
+      sessionStorage.setItem("userId", user.id);
       const rolDelServidor = user.rol || "ADOPTANTE";
       const formatoRol = rolDelServidor.toUpperCase();
 
