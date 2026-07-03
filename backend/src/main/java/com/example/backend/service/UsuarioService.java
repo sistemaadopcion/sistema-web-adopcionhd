@@ -4,7 +4,10 @@ import com.example.backend.model.Usuario;
 import com.example.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.Map;    
+import java.util.HashMap; 
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,6 +78,22 @@ public class UsuarioService {
     // ─── Listar usuarios por rol ───────────────────────────
     public List<Usuario> listarPorRol(Usuario.RolUsuario rol) {
         return usuarioRepository.findByRol(rol);
+    }
+    // Dentro de UsuarioService.java
+
+    public Map<String, Object> obtenerDashboardStats(Integer id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Aquí construirías el mapa basado en tus repositorios (ej: mascotaRepository,
+        // solicitudRepository)
+        // Esto es un ejemplo, adáptalo según tus entidades reales:
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("solicitudes", 3); // Deberías consultar solicitudRepository.countByUsuarioId(id)
+        stats.put("favoritas", 2); // Deberías consultar algo similar
+        stats.put("perfil", usuario.getEstado() != null ? usuario.getEstado() : "Activo");
+
+        return stats;
     }
 
 }

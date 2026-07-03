@@ -1,104 +1,108 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Importa esto
+import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { obtenerMascotasDisponibles } from '../../services/mascotaService';
 import DetalleMascota from "./DetalleMascota";
 
 function Mascotas({ setMascotaSeleccionadaGlobal }) {
-  const navigate = useNavigate(); // 2. Inicializa el hook
+  const navigate = useNavigate();
   const [mascotas, setMascotas] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
-  
   const [busqueda, setBusqueda] = useState('');
-  const [filtroEspecie, setFiltroEspecie] = useState('');
-  const [filtroRaza, setFiltroRaza] = useState('');
-  const [filtroTamano, setFiltroTamano] = useState('');
+  const [especie, setEspecie] = useState('');
 
-  useEffect(() => { cargarMascotas(); }, []);
+  useEffect(() => {
+    cargarMascotas();
+  }, []);
 
   const cargarMascotas = async () => {
     try {
+      setLoading(true);
       const data = await obtenerMascotasDisponibles();
       setMascotas(data);
-    } catch (error) { console.error("Error al cargar:", error); }
+    } catch (error) { console.error("Error:", error); }
+    finally { setLoading(false); }
   };
 
-  const mascotasFiltradas = mascotas.filter(m => 
-    m.nombre.toLowerCase().includes(busqueda.toLowerCase()) &&
-    (filtroEspecie === '' || m.especie === filtroEspecie) &&
-    (filtroRaza === '' || m.raza === filtroRaza) &&
-    (filtroTamano === '' || m.tamanio === filtroTamano)
-  );
+  const mascotasFiltradas = useMemo(() => {
+    return mascotas.filter(m => {
+      const coincideBusqueda = m.nombre.toLowerCase().includes(busqueda.toLowerCase());
+      // Aseguramos que el filtro de especie sea preciso
+      const coincideEspecie = especie === '' || m.especie.toUpperCase() === especie.toUpperCase();
+      return coincideBusqueda && coincideEspecie;
+    });
+  }, [mascotas, busqueda, especie]);
 
-  // 3. Lógica mejorada al solicitar adopción
-  const handleSolicitarAdopcion = (mascota) => {
-    setMascotaSeleccionadaGlobal(mascota); // Guarda en App.jsx
-    navigate('/adopcion'); // Navega a la ruta del formulario
-  };
+  if (loading) return <div style={styles.loader}>Cargando... 🐾</div>;
 
   if (mascotaSeleccionada) {
-    return (
-      <DetalleMascota 
-        mascota={mascotaSeleccionada} 
-        onVolver={() => setMascotaSeleccionada(null)} 
-        onSolicitarAdopcion={handleSolicitarAdopcion} // Usa la nueva función
-      />
-    );
+    return <DetalleMascota mascota={mascotaSeleccionada} onVolver={() => setMascotaSeleccionada(null)} onSolicitarAdopcion={(m) => { setMascotaSeleccionadaGlobal(m); navigate('/adopcion'); }} />;
   }
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1200px', margin: 'auto' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '30px', color: '#1e293b' }}>🐾 Encuentra a tu compañero ideal</h2>
+    <div style={styles.pageContainer}>
+      <header style={styles.header}>
+        <h1 style={styles.title}>Nuestros rescatados</h1>
+        <p style={styles.subtitle}>Encuentra un compañero de vida</p>
+      </header>
 
-      <div style={{ 
-        background: '#f8fafc', padding: '20px', borderRadius: '12px', marginBottom: '30px',
-        display: 'flex', gap: '15px', flexWrap: 'wrap', boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-      }}>
-        <input placeholder="🔍 Buscar por nombre..." onChange={e => setBusqueda(e.target.value)} style={{flex: '1', minWidth: '200px', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1'}} />
-        <select onChange={e => setFiltroEspecie(e.target.value)} style={{padding: '10px', borderRadius: '6px'}}>
-          <option value="">Todas las Especies</option>
-          <option value="PERRO">Perro</option>
-          <option value="GATO">Gato</option>
-          <option value="OTRO">Otro</option>
-        </select>
-        <select onChange={e => setFiltroRaza(e.target.value)} style={{padding: '10px', borderRadius: '6px'}}>
-          <option value="">Todas las Razas</option>
-          {[...new Set(mascotas.map(m => m.raza))].map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
-        <select onChange={e => setFiltroTamano(e.target.value)} style={{padding: '10px', borderRadius: '6px'}}>
-          <option value="">Todos los Tamaños</option>
-          <option value="PEQUENIO">Pequeño</option>
-          <option value="MEDIANO">Mediano</option>
-          <option value="GRANDE">Grande</option>
+      <div style={styles.filterBar}>
+        <input 
+          placeholder="Buscar por nombre..." 
+          onChange={e => setBusqueda(e.target.value)} 
+          style={styles.input} 
+        />
+        <select onChange={e => setEspecie(e.target.value)} style={styles.select}>
+          <option value="">Todas las especies</option>
+          <option value="PERRO">Perros</option>
+          <option value="GATO">Gatos</option>
         </select>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
-        {mascotasFiltradas.map((m) => (
-          <div key={m.id} style={{ 
-            background: 'white', borderRadius: '20px', overflow: 'hidden', 
-            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', transition: 'transform 0.3s'
-          }}>
-            <img src={m.foto || 'https://via.placeholder.com/300'} alt={m.nombre} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-            <div style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ margin: '0' }}>{m.nombre}</h3>
-                <span style={{ fontSize: '12px', background: '#e2e8f0', padding: '4px 8px', borderRadius: '4px' }}>{m.tamanio}</span>
+      {mascotasFiltradas.length > 0 ? (
+        <div style={styles.grid}>
+          {mascotasFiltradas.map((m) => (
+            <div key={m.id} style={styles.card}>
+              <div style={styles.imageWrapper}>
+                <img src={m.foto} alt={m.nombre} style={styles.image} />
               </div>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: '10px 0' }}>{m.especie} • {m.raza}</p>
-              <button 
-                onClick={() => setMascotaSeleccionada(m)}
-                style={{ 
-                  width: '100%', padding: '12px', background: '#3b82f6', color: 'white', 
-                  border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' 
-                }}>
-                Ver más información
-              </button>
+              <div style={styles.cardContent}>
+                <span style={styles.badge}>{m.tamanio}</span>
+                <h3 style={styles.petName}>{m.nombre}</h3>
+                <p style={styles.petInfo}>{m.especie} • {m.raza}</p>
+                <button onClick={() => setMascotaSeleccionada(m)} style={styles.button}>
+                  Ver detalles
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div style={styles.emptyState}>No se encontraron mascotas con esos filtros.</div>
+      )}
     </div>
   );
 }
+
+const styles = {
+  pageContainer: { padding: '20px', maxWidth: '1100px', margin: 'auto' },
+  header: { marginBottom: '30px', borderBottom: '1px solid #e2e8f0', paddingBottom: '20px' },
+  title: { fontSize: '1.8rem', margin: '0 0 5px' },
+  subtitle: { color: '#64748b', margin: 0 },
+  filterBar: { display: 'flex', gap: '10px', marginBottom: '30px' },
+  input: { padding: '10px 15px', borderRadius: '8px', border: '1px solid #cbd5e1', flex: 1 },
+  select: { padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' },
+  card: { background: 'white', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', transition: 'transform 0.2s' },
+  imageWrapper: { height: '180px' },
+  image: { width: '100%', height: '100%', objectFit: 'cover' },
+  cardContent: { padding: '15px' },
+  badge: { fontSize: '0.7rem', background: '#f1f5f9', padding: '3px 8px', borderRadius: '4px', color: '#475569' },
+  petName: { margin: '10px 0 5px', fontSize: '1.2rem' },
+  petInfo: { fontSize: '0.85rem', color: '#64748b', marginBottom: '15px' },
+  button: { width: '100%', padding: '10px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' },
+  emptyState: { textAlign: 'center', padding: '50px', color: '#94a3b8' },
+  loader: { textAlign: 'center', marginTop: '50px' }
+};
 
 export default Mascotas;

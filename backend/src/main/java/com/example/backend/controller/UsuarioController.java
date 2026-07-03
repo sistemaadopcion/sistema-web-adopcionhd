@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,5 +101,14 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
     }
 
-    
+    // Agrega esto dentro de tu clase UsuarioController
+    @GetMapping("/stats/{id}")
+    public ResponseEntity<Map<String, Object>> getStats(@PathVariable Integer id) {
+        try {
+            return ResponseEntity.ok(usuarioService.obtenerDashboardStats(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

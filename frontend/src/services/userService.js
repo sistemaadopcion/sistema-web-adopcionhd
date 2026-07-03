@@ -71,3 +71,20 @@ export const eliminarUsuario = async (id) => {
   if (!response.ok) throw new Error("Error al eliminar el usuario");
   return true;
 };
+
+// ... (tus funciones anteriores)
+
+// ─── DASHBOARD ──────────────────────────────────────────
+
+export const obtenerDashboardData = async (userId) => {
+  const response = await fetch(`${API_URL}/stats/${userId}`, {
+    method: "GET",
+    headers: { 
+      "Content-Type": "application/json"
+      // Si usas autenticación por tokens, aquí agregarías: "Authorization": `Bearer ${token}`
+    }
+  });
+  
+  if (!response.ok) throw new Error("Error al obtener estadísticas del dashboard");
+  return await response.json();
+};

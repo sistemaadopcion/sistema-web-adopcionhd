@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
+
 // Páginas de Autenticación
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -10,7 +11,8 @@ import Home from "./pages/Home";
 import Mascotas from "./pages/mascotas/Mascotas";
 import FormularioAdopcion from "./pages/adopciones/FormularioAdopcion";
 import MisSolicitudes from "./pages/adopciones/MisSolicitudes";
-import Perfil from "./pages/adopciones/Perfil"; // Asegúrate de que la ruta sea correcta según tu carpeta
+import Perfil from "./pages/adopciones/Perfil";
+import DashboardUsuario from "./pages/adopciones/DashboardUsuario"; // Tu nuevo componente
 
 // Páginas de Administrador
 import Solicitudes from "./pages/admin/Solicitudes";
@@ -22,20 +24,16 @@ import GestionMascotas from './pages/admin/GestionMascotas';
 import Navbar from "./components/layout/Navbar";
 
 const AppContent = ({ userRole, setUserRole }) => {
-  const navigate = useNavigate();
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
 
   const handleLoginSuccess = (rol) => {
     setUserRole(rol);
     sessionStorage.setItem("userRole", rol);
-    // Redirección inteligente según el rol
-    navigate(rol === "ADMIN" ? "/admin/dashboard" : "/mascotas");
   };
 
   const handleLogout = () => {
     sessionStorage.clear();
     setUserRole(null);
-    navigate("/");
   };
 
   return (
@@ -43,24 +41,28 @@ const AppContent = ({ userRole, setUserRole }) => {
       <Navbar userRole={userRole} onLogout={handleLogout} />
       <div className="main-content" style={{ marginTop: '70px' }}>
         <Routes>
+          {/* Lógica de Redirección Inteligente en la raíz */}
+          <Route path="/" element={
+            userRole ? (
+              <Navigate to={userRole === "ADMIN" ? "/admin/dashboard" : "/dashboard"} />
+            ) : (
+              <Home />
+            )
+          } />
+
           {/* Rutas Públicas */}
-          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/registro" element={<Register />} />
           
           {/* Rutas de Adoptante */}
+          <Route path="/dashboard" element={userRole ? <DashboardUsuario /> : <Navigate to="/login" />} />
           <Route path="/mascotas" element={<Mascotas setMascotaSeleccionadaGlobal={setMascotaSeleccionada} />} />
-          <Route path="/adopcion" element={
-            <FormularioAdopcion 
-              mascota={mascotaSeleccionada} 
-              onVolver={() => navigate("/mascotas")} 
-            />
-          } />
+          <Route path="/adopcion" element={<FormularioAdopcion mascota={mascotaSeleccionada} />} />
           <Route path="/mis-solicitudes" element={<MisSolicitudes />} />
-          <Route path="/perfil" element={<Perfil />} /> {/* <--- AGREGA ESTA RUTA */}
+          <Route path="/perfil" element={<Perfil />} />
 
           {/* Rutas de Administrador */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={userRole === "ADMIN" ? <AdminDashboard /> : <Navigate to="/" />} />
           <Route path="/admin/solicitudes" element={<Solicitudes />} />
           <Route path="/admin/usuarios" element={<Usuarios />} />
           <Route path="/admin/mascotas" element={<GestionMascotas />} />
@@ -71,7 +73,6 @@ const AppContent = ({ userRole, setUserRole }) => {
 };
 
 const App = () => {
-  // Inicializamos el rol desde sessionStorage al cargar la app
   const [userRole, setUserRole] = useState(sessionStorage.getItem("userRole") || null);
   
   return (

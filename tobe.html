@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagrama AS-IS Realista FAP - Con Decisiones Clarificadas</title>
+    <title>Diagrama de Actividades TO-BE - Admisión FAP</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -25,11 +25,11 @@
 <body>
 
     <div class="canvas-container">
-        <canvas id="canvasASISDecisiones" width="1050" height="1750"></canvas>
+        <canvas id="canvasTOBEDecisiones" width="1050" height="1550"></canvas>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvasASISDecisiones');
+        const canvas = document.getElementById('canvasTOBEDecisiones');
         const ctx = canvas.getContext('2d');
 
         const width = canvas.width;
@@ -39,17 +39,19 @@
 
         const carriles = [
             { nombre: "POSTULANTE", x: 0 },
-            { nombre: "OFICINA DE ADMISIÓN", x: colWidth },
-            { nombre: "COMITÉ EVALUADOR", x: colWidth * 2 }
+            { nombre: "PLATAFORMA WEB (SISTEMA)", x: colWidth },
+            { nombre: "OFICINA / COMITÉ EVALUADOR", x: colWidth * 2 }
         ];
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
 
-        // Estructura de carriles
+        // Estructura de carriles (Verde sutil para el TO-BE)
         ctx.lineWidth = 1.5;
         carriles.forEach((carril, index) => {
-            ctx.fillStyle = '#f0f4f8';
+            ctx.fillStyle = '#e2f0d9'; 
+            if(index === 1) ctx.fillStyle = '#d9e1f2'; // Azul sutil para resaltar la plataforma
+            
             ctx.fillRect(carril.x, 0, colWidth, headerHeight);
             ctx.strokeStyle = '#a2b5cd';
             ctx.strokeRect(carril.x, 0, colWidth, headerHeight);
@@ -69,7 +71,7 @@
             }
         });
 
-        ctx.strokeStyle = '#1c446c';
+        ctx.strokeStyle = '#2e7d32';
         ctx.lineWidth = 2;
         ctx.strokeRect(0, 0, width, height);
 
@@ -83,7 +85,6 @@
         }
 
         function dibujarFin(x, y, label = "ELIMINADO") {
-            // Círculo exterior
             ctx.beginPath();
             ctx.arc(x, y, 14, 0, 2 * Math.PI);
             ctx.strokeStyle = '#cc0000';
@@ -91,39 +92,34 @@
             ctx.stroke();
             ctx.closePath();
 
-            // Círculo interior
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
             ctx.fillStyle = '#cc0000';
             ctx.fill();
             ctx.closePath();
 
-            // Texto "Eliminado" mejorado visualmente
             ctx.fillStyle = '#cc0000';
             ctx.font = 'bold 12px Segoe UI';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
             
-            // Un pequeño efecto de sombra blanca para resaltar sobre cualquier línea de fondo
             ctx.shadowColor = '#ffffff';
             ctx.shadowBlur = 4;
             ctx.fillText(label, x + 22, y);
-            
-            // Reset de sombra para no afectar otros elementos
             ctx.shadowBlur = 0;
         }
 
         function dibujarActividad(texto, x, y, w = 220, h = 42) {
             ctx.beginPath();
             ctx.roundRect(x - w/2, y - h/2, w, h, 14);
-            ctx.fillStyle = '#fffdf3';
+            ctx.fillStyle = '#fbfdfb';
             ctx.fill();
-            ctx.strokeStyle = '#c5a059';
+            ctx.strokeStyle = '#2e7d32';
             ctx.lineWidth = 1.5;
             ctx.stroke();
             ctx.closePath();
 
-            ctx.fillStyle = '#3e3e3e';
+            ctx.fillStyle = '#222222';
             ctx.font = '11px Segoe UI';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -149,7 +145,7 @@
             ctx.lineTo(x, y + h/2);
             ctx.lineTo(x - w/2, y);
             ctx.closePath();
-            ctx.fillStyle = '#fffdf3';
+            ctx.fillStyle = '#fbfdfb';
             ctx.fill();
             ctx.strokeStyle = '#1c446c';
             ctx.lineWidth = 1.5;
@@ -160,7 +156,7 @@
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
-            ctx.strokeStyle = '#828282';
+            ctx.strokeStyle = '#666666';
             ctx.lineWidth = 1.2;
             ctx.stroke();
             ctx.closePath();
@@ -170,12 +166,12 @@
             ctx.moveTo(x2, y2);
             ctx.lineTo(x2 - 7 * Math.cos(angulo - Math.PI / 6), y2 - 7 * Math.sin(angulo - Math.PI / 6));
             ctx.lineTo(x2 - 7 * Math.cos(angulo + Math.PI / 6), y2 - 7 * Math.sin(angulo + Math.PI / 6));
-            ctx.fillStyle = '#828282';
+            ctx.fillStyle = '#666666';
             ctx.fill();
             ctx.closePath();
 
             if(txt !== "") {
-                ctx.fillStyle = '#444';
+                ctx.fillStyle = '#333';
                 ctx.font = 'bold italic 10.5px Segoe UI';
                 ctx.textAlign = 'center';
                 ctx.fillText(txt, (x1 + x2)/2, (y1 + y2)/2 - 8);
@@ -185,115 +181,116 @@
         const C1 = colWidth / 2;
         const C2 = colWidth + colWidth/2;
         const C3 = colWidth * 2 + colWidth/2;
-        
-        // Eje de desvío hacia la derecha para alineación ordenada de los eliminados
         const X_ELIMINAR = width - 110; 
 
-        // --- MAPEO COMPLETO ---
+        // --- FLUJO OPTIMIZADO TO-BE ---
         dibujarInicio(C1, 70);
         dibujarFlecha(C1, 80, C1, 110);
 
-        dibujarActividad("Ingresa a la web institucional", C1, 130);
+        dibujarActividad("Se registra y crea usuario en la plataforma", C1, 130);
         dibujarFlecha(C1, 151, C1, 190);
 
-        dibujarActividad("Descarga prospecto y PDF carpetas", C1, 210);
+        dibujarActividad("Completa formulario y carga requisitos", C1, 210);
         dibujarFlecha(C1, 231, C1, 270);
 
-        dibujarActividad("Llena carpetas y declaraciones a mano", C1, 290);
-        dibujarFlecha(C1, 311, C1, 350);
+        dibujarActividad("Registra comprobante de pago digital", C1, 290);
+        dibujarFlecha(C1 + 110, 290, C2 - 110, 290);
 
-        dibujarActividad("Acude al banco y realiza pago manual", C1, 370);
-        dibujarFlecha(C1, 391, C1, 430);
+        // Validación Automática Core
+        dibujarActividad("Valida automáticamente formatos y campos", C2, 290);
+        dibujarFlecha(C2 + 110, 290, C3 - 110, 340);
 
-        dibujarActividad("Viaja y entrega expediente físico en Surco", C1, 450);
-        dibujarFlecha(C1 + 110, 450, C2 - 110, 450);
+        // Auditoría Digital
+        dibujarActividad("Audita y aprueba expediente desde el panel", C3, 340);
+        dibujarFlecha(C3 - 110, 340, C2 + 110, 400);
 
-        // Validación inicial de Carpeta Física
-        dibujarActividad("Recibe y revisa expediente manualmente", C2, 450);
-        dibujarFlecha(C2, 471, C2, 510);
+        dibujarActividad("Procesa estado de revisión de expediente", C2, 400);
+        dibujarFlecha(C2, 421, C2, 455);
         
-        dibujarDecision(C2, 525);
-        dibujarFlecha(C2 + 15, 525, X_ELIMINAR, 525, "[Rechazo Formato]");
-        dibujarFin(X_ELIMINAR, 525, "ELIMINADO");
+        dibujarDecision(C2, 470);
+        dibujarFlecha(C2 + 15, 470, X_ELIMINAR, 470, "[Rechazado]");
+        dibujarFin(X_ELIMINAR, 470, "ELIMINADO");
 
-        dibujarFlecha(C2, 540, C2, 580, "[Aceptado]");
-        dibujarActividad("Registra postulante y asigna código", C2, 600);
-        dibujarFlecha(C2, 621, C2, 660);
+        dibujarFlecha(C2, 485, C2, 520, "[Aprobado]");
+        dibujarActividad("Asigna código y cambia estado a Inscrito", C2, 540);
+        dibujarFlecha(C2, 561, C2, 600);
 
-        dibujarActividad("Publica lista de aptos en PDF estático", C2, 680);
-        dibujarFlecha(C2 - 110, 680, C1 + 110, 740);
+        dibujarActividad("Notifica confirmación y alertas en tiempo real", C2, 620);
+        dibujarFlecha(C2 - 110, 620, C1 + 110, 670);
 
-        dibujarActividad("Busca manualmente su código en el PDF", C1, 740);
-        dibujarFlecha(C1, 761, C1, 800);
+        dibujarActividad("Revisa su panel y cronograma de exámenes", C1, 670);
+        dibujarFlecha(C1, 691, C1, 730);
 
-        // ================= FASE 1: MÉDICO =================
-        dibujarActividad("Se presenta a Examen Médico en Sede", C1, 820);
-        dibujarFlecha(C1 + 110, 820, C3 - 110, 820);
+        // ================= CERRANDO FILTROS EN TIEMPO REAL =================
         
-        dibujarActividad("Evalúa aptitud psicosomática militar", C3, 820);
-        dibujarFlecha(C3, 841, C3, 875);
-        dibujarDecision(C3, 890);
-        dibujarFlecha(C3 + 15, 890, X_ELIMINAR, 890, "[No Apto]");
-        dibujarFin(X_ELIMINAR, 890, "ELIMINADO");
+        // EXAMEN MÉDICO
+        dibujarActividad("Se presenta a Examen Médico Obligatorio", C1, 750);
+        dibujarFlecha(C1 + 110, 750, C3 - 110, 750);
+        dibujarActividad("Registra aptitud médica en vivo en el sistema", C3, 750);
+        dibujarFlecha(C3 - 110, 750, C2 + 110, 800);
         
-        dibujarFlecha(C3, 905, C2 + 110, 940, "[Apto]");
-        dibujarActividad("Publica resultados de Examen Médico", C2, 940);
-        dibujarFlecha(C2 - 110, 940, C1 + 110, 990);
+        dibujarActividad("Procesa estado de Examen Médico", C2, 800);
+        dibujarFlecha(C2, 821, C2, 850);
+        dibujarDecision(C2, 865);
+        dibujarFlecha(C2 + 15, 865, X_ELIMINAR, 865, "[No Apto]");
+        dibujarFin(X_ELIMINAR, 865, "ELIMINADO");
+        
+        dibujarFlecha(C2, 880, C1 + 110, 920, "[Apto]");
 
-        // ================= FASE 2: COGNITIVO =================
-        dibujarActividad("Rinde Examen Cognitivo (Conocimientos)", C1, 990);
-        dibujarFlecha(C1 + 110, 990, C3 - 110, 1040);
+        // EXAMEN COGNITIVO
+        dibujarActividad("Rinde Examen Cognitivo (Conocimientos)", C1, 920);
+        dibujarFlecha(C1 + 110, 920, C3 - 110, 920);
+        dibujarActividad("Registra notas cognitivas directamente", C3, 920);
+        dibujarFlecha(C3 - 110, 920, C2 + 110, 970);
         
-        dibujarActividad("Aplica pruebas cognitivas y académicas", C3, 1040);
-        dibujarFlecha(C3, 1061, C3, 1095);
-        dibujarDecision(C3, 1110);
-        dibujarFlecha(C3 + 15, 1110, X_ELIMINAR, 1110, "[Reprobado]");
-        dibujarFin(X_ELIMINAR, 1110, "ELIMINADO");
+        dibujarActividad("Procesa estado de Examen Cognitivo", C2, 970);
+        dibujarFlecha(C2, 991, C2, 1020);
+        dibujarDecision(C2, 1035);
+        dibujarFlecha(C2 + 15, 1035, X_ELIMINAR, 1035, "[Reprobado]");
+        dibujarFin(X_ELIMINAR, 1035, "ELIMINADO");
         
-        dibujarFlecha(C3, 1125, C2 + 110, 1160, "[Aprobado]");
-        dibujarActividad("Publica aptos de la fase cognitiva", C2, 1160);
-        dibujarFlecha(C2 - 110, 1160, C1 + 110, 1210);
+        dibujarFlecha(C2, 1050, C1 + 110, 1090, "[Aprobado]");
 
-        // ================= FASE 3: PSICOLÓGICO =================
-        dibujarActividad("Rinde Examen Psicológico y Psicotécnico", C1, 1210);
-        dibujarFlecha(C1 + 110, 1210, C3 - 110, 1260);
+        // EXAMEN PSICOLÓGICO
+        dibujarActividad("Rinde Examen Psicológico y Psicotécnico", C1, 1090);
+        dibujarFlecha(C1 + 110, 1090, C3 - 110, 1090);
+        dibujarActividad("Registra aptitud psicológica en el sistema", C3, 1090);
+        dibujarFlecha(C3 - 110, 1090, C2 + 110, 1140);
         
-        dibujarActividad("Evalúa rasgos de perfil psicológico FAP", C3, 1260);
-        dibujarFlecha(C3, 1281, C3, 1315);
-        dibujarDecision(C3, 1330);
-        dibujarFlecha(C3 + 15, 1330, X_ELIMINAR, 1330, "[No Apto]");
-        dibujarFin(X_ELIMINAR, 1330, "ELIMINADO");
+        dibujarActividad("Procesa estado de Examen Psicológico", C2, 1140);
+        dibujarFlecha(C2, 1161, C2, 1190);
+        dibujarDecision(C2, 1205);
+        dibujarFlecha(C2 + 15, 1205, X_ELIMINAR, 1205, "[No Apto]");
+        dibujarFin(X_ELIMINAR, 1205, "ELIMINADO");
         
-        dibujarFlecha(C3, 1345, C2 + 110, 1385, "[Apto]");
-        dibujarActividad("Publica aptos del examen psicológico", C2, 1385);
-        dibujarFlecha(C2 - 110, 1385, C1 + 110, 1435);
+        dibujarFlecha(C2, 1220, C1 + 110, 1260, "[Apto]");
 
-        // ================= FASES 4 Y 5: FÍSICO Y ENTREVISTA =================
-        dibujarActividad("Rinde Examen Físico y Entrevista Final", C1, 1435);
-        dibujarFlecha(C1 + 110, 1435, C3 - 110, 1485);
-        
-        dibujarActividad("Evalúa rendimiento físico y entrevista", C3, 1485);
-        dibujarFlecha(C3, 1506, C3, 1535);
-        
-        dibujarDecision(C3, 1550);
-        dibujarFlecha(C3 + 15, 1550, X_ELIMINAR, 1550, "[No Apto]");
-        dibujarFin(X_ELIMINAR, 1550, "ELIMINADO");
+        // FÍSICO Y ENTREVISTA FINAL
+        dibujarActividad("Rinde Examen Físico y Entrevista Final", C1, 1260);
+        dibujarFlecha(C1 + 110, 1260, C3 - 110, 1260);
+        dibujarActividad("Registra rendimiento y notas finales", C3, 1260);
+        dibujarFlecha(C3 - 110, 1260, C2 + 110, 1310);
 
-        dibujarFlecha(C3, 1565, C2 + 110, 1600, "[Apto]");
-        
-        // Consolidación final de la postulación
-        dibujarActividad("Digita notas y publica Cuadro Final PDF", C2, 1600);
-        dibujarFlecha(C2 - 110, 1600, C1 + 110, 1650);
+        // Automatización del Cuadro de Mérito Final
+        dibujarActividad("Calcula puntaje total y Cuadro de Mérito", C2, 1310);
+        dibujarFlecha(C2, 1331, C2, 1360);
+        dibujarDecision(C2, 1375);
+        dibujarFlecha(C2 + 15, 1375, X_ELIMINAR, 1375, "[Sin Vacante]");
+        dibujarFin(X_ELIMINAR, 1375, "ELIMINADO");
 
-        dibujarActividad("Verifica si alcanzó vacante e ingresa", C1, 1650);
-        dibujarFlecha(C1, 1671, C1, 1710);
+        dibujarFlecha(C2, 1390, C1 + 110, 1430, "[Alcanzó Vacante]");
 
-        // Fin Exitoso con etiqueta diferenciada
-        dibujarFin(C1, 1725, "INGRESÓ A LA FAP");
-        // Forzar color verde para el éxito
+        // Finalización Exitosa
+        dibujarActividad("Visualiza perfil de aptitud y vacante final", C1, 1430);
+        dibujarFlecha(C1, 1451, C1, 1490);
+
+        dibujarActividad("Ingresa a la Escuela de Oficiales FAP", C1, 1510);
+        dibujarFlecha(C1, 1531, C1, 1535);
+
+        dibujarFin(C1, 1542, "INGRESÓ A LA FAP");
         ctx.fillStyle = '#2e7d32';
         ctx.font = 'bold 12px Segoe UI';
-        ctx.fillText("INGRESÓ A LA FAP", C1 + 22, 1725);
+        ctx.fillText("INGRESÓ A LA FAP", C1 + 22, 1542);
 
     </script>
 </body>
