@@ -18,7 +18,8 @@ function Navbar({ onLogout, userRole }) {
     ? [
         { label: 'Dashboard', path: '/admin/dashboard' },
         { label: 'Mascotas', path: '/admin/mascotas' },
-        { label: 'Solicitudes', path: '/admin/solicitudes' }
+        { label: 'Solicitudes', path: '/admin/solicitudes' },
+              { id: 'usuarios', label: '👥 Usuarios', path: '/admin/usuarios' }
       ]
     : [
         { label: 'Inicio', path: '/' },
