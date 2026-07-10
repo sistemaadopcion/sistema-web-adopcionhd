@@ -17,13 +17,14 @@ public class CorsConfig {
 
         // ─── Orígenes permitidos ───────────────────────────
         // Aquí van los URLs del frontend que pueden hacer requests
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",      // Vite (React)
-                "http://localhost:3000",      // Create React App
-                "http://localhost:4200",      // Angular
+       configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://localhost:4200",
                 "http://127.0.0.1:5173",
-                "http://127.0.0.1:3000"
-        ));
+                "http://127.0.0.1:3000",
+                "https://sistema-web-adopcionhd.vercel.app" 
+        )); // Aquí cierras el paréntesis de asList y el punto y coma final
 
         // ─── Métodos HTTP permitidos ────────────────────────
         configuration.setAllowedMethods(Arrays.asList(
