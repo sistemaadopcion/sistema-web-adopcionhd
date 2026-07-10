@@ -1,6 +1,8 @@
-const API_URL = "http://localhost:8080/api/mascotas";
+// Detecta la URL de entorno o usa localhost por defecto
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_URL = `${API_BASE}/api/mascotas`;
 
-// ─── GET: Listar todas las mascotas (Útil para el Dashboard) ────
+// ─── GET: Listar todas las mascotas ────
 export const obtenerTodasLasMascotas = async () => {
   const response = await fetch(API_URL, {
     method: "GET",
@@ -15,7 +17,7 @@ export const obtenerTodasLasMascotas = async () => {
   return await response.json();
 };
 
-// ─── GET: Listar mascotas disponibles (Para el Catálogo) ───
+// ─── GET: Listar mascotas disponibles ───
 export const obtenerMascotasDisponibles = async () => {
   const response = await fetch(`${API_URL}/disponibles`, {
     method: "GET",

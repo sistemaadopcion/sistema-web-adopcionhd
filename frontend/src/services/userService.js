@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:8080/api/usuarios";
+// Detecta la URL de entorno o usa localhost por defecto
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_URL = `${API_BASE}/api/usuarios`;
 
 // ─── AUTENTICACIÓN Y REGISTRO ──────────────────────────
 
@@ -72,8 +74,6 @@ export const eliminarUsuario = async (id) => {
   return true;
 };
 
-// ... (tus funciones anteriores)
-
 // ─── DASHBOARD ──────────────────────────────────────────
 
 export const obtenerDashboardData = async (userId) => {
@@ -81,7 +81,6 @@ export const obtenerDashboardData = async (userId) => {
     method: "GET",
     headers: { 
       "Content-Type": "application/json"
-      // Si usas autenticación por tokens, aquí agregarías: "Authorization": `Bearer ${token}`
     }
   });
   
