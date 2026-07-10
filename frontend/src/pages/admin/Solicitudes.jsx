@@ -3,48 +3,54 @@ import { obtenerSolicitudes, actualizarEstadoSolicitud } from '../../services/ad
 
 const Solicitudes = () => {
   const [solicitudes, setSolicitudes] = useState([]);
-  // Actualizado el filtro inicial para coincidir con tus estados reales
-  const [filtro, setFiltro] = useState('ENVIADA'); 
+  const [filtro, setFiltro] = useState('ENVIADA');
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
+  const [cargando, setCargando] = useState(false);
 
   useEffect(() => { cargarSolicitudes(); }, []);
 
   const cargarSolicitudes = async () => {
+    setCargando(true);
     try {
       const data = await obtenerSolicitudes();
       setSolicitudes(data);
     } catch (error) { console.error("Error:", error); }
+    setCargando(false);
   };
 
   const manejarEstado = async (id, nuevoEstado) => {
     try {
-      // Si el estado es DENEGADA, podemos pedir una observación (opcional)
       await actualizarEstadoSolicitud(id, nuevoEstado);
-      cargarSolicitudes();
+      await cargarSolicitudes(); // Recargar datos
       setSolicitudSeleccionada(null);
     } catch (error) { alert("Error al procesar: " + error.message); }
   };
 
-  const solicitudesFiltradas = solicitudes.filter(s => s.estadoSolicitud === filtro);
+  const getBadgeStyle = (estado) => {
+    const base = { padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase' };
+    if (estado === 'ENVIADA') return { ...base, background: '#fef3c7', color: '#92400e' };
+    if (estado === 'APROBADA') return { ...base, background: '#dcfce7', color: '#166534' };
+    return { ...base, background: '#fee2e2', color: '#991b1b' };
+  };
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1100px', margin: 'auto' }}>
-      <h1 style={{ color: '#0f172a', marginBottom: '20px' }}>📋 Gestión de Solicitudes</h1>
+    <div style={{ padding: '40px', maxWidth: '1100px', margin: 'auto', fontFamily: 'sans-serif' }}>
+      <header style={{ marginBottom: '30px' }}>
+        <h1 style={{ color: '#0f172a', fontSize: '2rem', margin: '0' }}>📋 Gestión de Solicitudes</h1>
+        <p style={{ color: '#64748b' }}>Administra y revisa las peticiones de adopción pendientes.</p>
+      </header>
 
-      {/* Pestañas: Usamos DENEGADA en lugar de RECHAZADA */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+      {/* Pestañas Modernas */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '25px' }}>
         {['ENVIADA', 'APROBADA', 'DENEGADA'].map((estado) => (
           <button 
             key={estado}
             onClick={() => setFiltro(estado)}
             style={{
-              padding: '10px 20px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              background: filtro === estado ? '#0f172a' : '#e2e8f0',
+              padding: '10px 24px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+              background: filtro === estado ? '#0f172a' : '#f1f5f9',
               color: filtro === estado ? 'white' : '#475569',
-              fontWeight: 'bold'
+              fontWeight: '600', transition: 'all 0.3s ease'
             }}
           >
             {estado === 'ENVIADA' ? 'Pendientes' : estado}
@@ -52,46 +58,56 @@ const Solicitudes = () => {
         ))}
       </div>
 
-      <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+      {/* Tabla con Estilo de Tarjeta */}
+      <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #f1f5f9' }}>
-              <th style={{ padding: '16px', textAlign: 'left' }}>Adoptante</th>
-              <th style={{ padding: '16px', textAlign: 'left' }}>Mascota</th>
-              <th style={{ padding: '16px', textAlign: 'center' }}>Acciones</th>
+            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+              <th style={{ padding: '20px', textAlign: 'left', color: '#475569' }}>Adoptante</th>
+              <th style={{ padding: '20px', textAlign: 'left', color: '#475569' }}>Mascota</th>
+              <th style={{ padding: '20px', textAlign: 'center', color: '#475569' }}>Estado</th>
+              <th style={{ padding: '20px', textAlign: 'right', color: '#475569' }}>Acción</th>
             </tr>
           </thead>
           <tbody>
-            {solicitudesFiltradas.length > 0 ? solicitudesFiltradas.map(s => (
-              <tr key={s.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px' }}>{s.usuario?.nombre}</td>
-                <td style={{ padding: '16px' }}>{s.mascota?.nombre}</td>
-                <td style={{ padding: '16px', textAlign: 'center' }}>
-                  <button onClick={() => setSolicitudSeleccionada(s)} style={{ padding: '8px 16px', cursor: 'pointer', background: '#f1f5f9', border: 'none', borderRadius: '6px' }}>👁️ Ver Detalle</button>
+            {solicitudes.filter(s => s.estadoSolicitud === filtro).map(s => (
+              <tr key={s.id} style={{ borderBottom: '1px solid #f1f5f9', '&:hover': { background: '#f8fafc' } }}>
+                <td style={{ padding: '20px' }}>
+                  <div style={{ fontWeight: '600', color: '#0f172a' }}>{s.usuario?.nombre}</div>
+                </td>
+                <td style={{ padding: '20px' }}>{s.mascota?.nombre}</td>
+                <td style={{ padding: '20px', textAlign: 'center' }}>
+                  <span style={getBadgeStyle(s.estadoSolicitud)}>{s.estadoSolicitud}</span>
+                </td>
+                <td style={{ padding: '20px', textAlign: 'right' }}>
+                  <button onClick={() => setSolicitudSeleccionada(s)} style={{ background: '#eff6ff', color: '#2563eb', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    Ver Detalles
+                  </button>
                 </td>
               </tr>
-            )) : (
-              <tr><td colSpan="3" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>No hay solicitudes en este estado.</td></tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
+      {/* Modal con Blur Effect */}
       {solicitudSeleccionada && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'white', padding: '30px', borderRadius: '16px', width: '400px' }}>
-            <h2>Detalle de {solicitudSeleccionada.mascota?.nombre}</h2>
-            <p><strong>Vivienda:</strong> {solicitudSeleccionada.tipoVivienda}</p>
-            <p><strong>Motivo:</strong> {solicitudSeleccionada.motivo}</p>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'white', padding: '40px', borderRadius: '24px', width: '450px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+            <h2 style={{ marginTop: 0 }}>Solicitud de {solicitudSeleccionada.usuario?.nombre}</h2>
+            <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', margin: '20px 0' }}>
+              <p><strong>Mascota:</strong> {solicitudSeleccionada.mascota?.nombre}</p>
+              <p><strong>Vivienda:</strong> {solicitudSeleccionada.tipoVivienda}</p>
+              <p><strong>Motivo:</strong> {solicitudSeleccionada.motivo}</p>
+            </div>
             
             {solicitudSeleccionada.estadoSolicitud === 'ENVIADA' && (
-              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                <button onClick={() => manejarEstado(solicitudSeleccionada.id, 'APROBADA')} style={{ flex: 1, padding: '12px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '8px' }}>Aprobar</button>
-                {/* CAMBIO AQUÍ: Enviamos 'DENEGADA' */}
-                <button onClick={() => manejarEstado(solicitudSeleccionada.id, 'DENEGADA')} style={{ flex: 1, padding: '12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px' }}>Rechazar</button>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => manejarEstado(solicitudSeleccionada.id, 'APROBADA')} style={{ flex: 1, padding: '14px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Aprobar ✅</button>
+                <button onClick={() => manejarEstado(solicitudSeleccionada.id, 'DENEGADA')} style={{ flex: 1, padding: '14px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Denegar ❌</button>
               </div>
             )}
-            <button onClick={() => setSolicitudSeleccionada(null)} style={{ width: '100%', marginTop: '10px', padding: '10px', background: 'none', border: '1px solid #cbd5e1', borderRadius: '8px' }}>Cerrar</button>
+            <button onClick={() => setSolicitudSeleccionada(null)} style={{ width: '100%', marginTop: '12px', padding: '12px', background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}>Cerrar</button>
           </div>
         </div>
       )}
