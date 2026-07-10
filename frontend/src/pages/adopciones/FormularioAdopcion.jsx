@@ -12,24 +12,25 @@ function FormularioAdopcion({ mascota, onVolver }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!formData.compromiso) {
       alert("Debes aceptar el compromiso de cuidado responsable.");
       return;
     }
     
-    // Obtener ID guardado en Login
     const userId = sessionStorage.getItem("userId");
     if (!userId) {
       alert("No se encontró sesión activa. Por favor, loguéate de nuevo.");
       return;
     }
 
+    // Estructura que coincide exactamente con tu entidad Java
     const solicitudData = {
       tipoVivienda: formData.tipoVivienda,
       espacioAdecuado: formData.espacioAdecuado,
       motivo: formData.motivo,
       observaciones: formData.otrasMascotas,
-      usuario: { id: parseInt(userId) }, 
+      usuario: { id: parseInt(userId) },
       mascota: { id: mascota.id }
     };
 
@@ -39,7 +40,7 @@ function FormularioAdopcion({ mascota, onVolver }) {
       onVolver(); 
     } catch (error) {
       console.error("Error completo:", error);
-      alert("Error al enviar la solicitud al servidor.");
+      alert("Error al enviar la solicitud al servidor. Revisa los datos.");
     }
   };
 
@@ -51,7 +52,11 @@ function FormularioAdopcion({ mascota, onVolver }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
           <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: '#334155', fontWeight: '600' }}>
             Tipo de vivienda:
-            <select value={formData.tipoVivienda} onChange={(e) => setFormData({ ...formData, tipoVivienda: e.target.value })} style={{ padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+            <select 
+              value={formData.tipoVivienda} 
+              onChange={(e) => setFormData({ ...formData, tipoVivienda: e.target.value })} 
+              style={{ padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0' }}
+            >
               <option value="CASA">Casa</option>
               <option value="DEPARTAMENTO">Departamento</option>
               <option value="OTRO">Otro</option>
@@ -67,15 +72,36 @@ function FormularioAdopcion({ mascota, onVolver }) {
           </label>
         </div>
 
-        <textarea placeholder="¿Tienes otras mascotas actualmente?" onChange={(e) => setFormData({ ...formData, otrasMascotas: e.target.value })} style={{ padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0', minHeight: '80px' }} />
-        <textarea placeholder="Motivo de adopción" required onChange={(e) => setFormData({ ...formData, motivo: e.target.value })} style={{ padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0', minHeight: '100px' }} />
+        <textarea 
+          placeholder="¿Tienes otras mascotas actualmente?" 
+          value={formData.otrasMascotas}
+          onChange={(e) => setFormData({ ...formData, otrasMascotas: e.target.value })} 
+          style={{ padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0', minHeight: '80px' }} 
+        />
+        
+        <textarea 
+          placeholder="Motivo de adopción" 
+          required 
+          value={formData.motivo}
+          onChange={(e) => setFormData({ ...formData, motivo: e.target.value })} 
+          style={{ padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0', minHeight: '100px' }} 
+        />
         
         <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#475569', fontSize: '0.95rem' }}>
-          <input type="checkbox" checked={formData.compromiso} onChange={(e) => setFormData({ ...formData, compromiso: e.target.checked })} />
+          <input 
+            type="checkbox" 
+            checked={formData.compromiso} 
+            onChange={(e) => setFormData({ ...formData, compromiso: e.target.checked })} 
+          />
           Acepto el compromiso de cuidado responsable.
         </label>
 
-        <button type="submit" style={{ padding: '15px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>Enviar Solicitud</button>
+        <button 
+          type="submit" 
+          style={{ padding: '15px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          Enviar Solicitud
+        </button>
       </form>
     </div>
   );

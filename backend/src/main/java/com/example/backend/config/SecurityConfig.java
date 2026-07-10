@@ -13,21 +13,19 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
     @Autowired
-    private CorsConfigurationSource corsConfigurationSource;  // ← inyectar desde CorsConfig
+    private CorsConfigurationSource corsConfigurationSource;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Habilitar CORS (inyectado desde CorsConfig)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                // Deshabilitar CSRF para desarrollo
-                .csrf(csrf -> csrf.disable())
-                // Autorización de rutas
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()
-                        .anyRequest().authenticated()
-                );
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .csrf(csrf -> csrf.disable()) // CSRF desactivado para permitir peticiones POST desde el frontend
+            .authorizeHttpRequests(auth -> auth
+                // Permitimos acceso total a todo lo que esté bajo /api/
+                .requestMatchers("/api/**").permitAll()
+                // Si tienes alguna ruta que no sea /api, aquí es donde pedirá login
+                .anyRequest().authenticated()
+            );
 
         return http.build();
     }

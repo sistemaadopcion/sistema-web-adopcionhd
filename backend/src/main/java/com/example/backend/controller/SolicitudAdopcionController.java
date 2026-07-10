@@ -1,6 +1,10 @@
 package com.example.backend.controller;
 
+import com.example.backend.model.Mascota;
 import com.example.backend.model.SolicitudAdopcion;
+import com.example.backend.model.Usuario;
+import com.example.backend.repository.MascotaRepository;
+import com.example.backend.repository.UsuarioRepository;
 import com.example.backend.service.SolicitudAdopcionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,62 +21,59 @@ public class SolicitudAdopcionController {
     @Autowired
     private SolicitudAdopcionService solicitudService;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private MascotaRepository mascotaRepository;
+
     // ─── GET: Listar todas las solicitudes ─────────────────
     @GetMapping
     public ResponseEntity<List<SolicitudAdopcion>> listarTodas() {
-        List<SolicitudAdopcion> solicitudes = solicitudService.listarTodas();
-        return ResponseEntity.ok(solicitudes);
+        return ResponseEntity.ok(solicitudService.listarTodas());
     }
 
     // ─── GET: Buscar solicitud por ID ──────────────────────
     @GetMapping("/{id}")
     public ResponseEntity<SolicitudAdopcion> buscarPorId(@PathVariable Integer id) {
-        Optional<SolicitudAdopcion> solicitud = solicitudService.buscarPorId(id);
-        if (solicitud.isPresent()) {
-            return ResponseEntity.ok(solicitud.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return solicitudService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // ─── POST: Registrar nueva solicitud ───────────────────
     @PostMapping
-    public ResponseEntity<SolicitudAdopcion> registrar(
-            @RequestBody SolicitudAdopcion solicitud) {
+    public ResponseEntity<?> registrar(@RequestBody SolicitudAdopcion solicitud) {
         try {
-            SolicitudAdopcion solicitudRegistrada =
-                    solicitudService.registrar(solicitud);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(solicitudRegistrada);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            // Validar existencia de usuario y mascota
+            Usuario usuario = usuarioRepository.findById(solicitud.getUsuario().getId())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            Mascota mascota = mascotaRepository.findById(solicitud.getMascota().getId())
+                    .orElseThrow(() -> new RuntimeException("Mascota no encontrada"));
+
+            // Asignar entidades completas
+            solicitud.setUsuario(usuario);
+            solicitud.setMascota(mascota);
+            solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.PENDIENTE);
+            
+            SolicitudAdopcion registrada = solicitudService.registrar(solicitud);
+            return ResponseEntity.status(HttpStatus.CREATED).body(registrada);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al registrar solicitud: " + e.getMessage());
         }
     }
 
     // ─── GET: Listar solicitudes por usuario ───────────────
     @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<List<SolicitudAdopcion>> listarPorUsuario(
-            @PathVariable Integer usuarioId) {
-        List<SolicitudAdopcion> solicitudes =
-                solicitudService.listarPorUsuario(usuarioId);
-        return ResponseEntity.ok(solicitudes);
-    }
-
-    // ─── GET: Listar solicitudes por estado ────────────────
-    @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<SolicitudAdopcion>> listarPorEstado(
-            @PathVariable SolicitudAdopcion.EstadoSolicitud estado) {
-        List<SolicitudAdopcion> solicitudes =
-                solicitudService.listarPorEstado(estado);
-        return ResponseEntity.ok(solicitudes);
+    public ResponseEntity<List<SolicitudAdopcion>> listarPorUsuario(@PathVariable Integer usuarioId) {
+        return ResponseEntity.ok(solicitudService.listarPorUsuario(usuarioId));
     }
 
     // ─── PUT: Aprobar solicitud ────────────────────────────
     @PutMapping("/{id}/aprobar")
     public ResponseEntity<SolicitudAdopcion> aprobar(@PathVariable Integer id) {
         try {
-            SolicitudAdopcion solicitud = solicitudService.aprobar(id);
-            return ResponseEntity.ok(solicitud);
+            return ResponseEntity.ok(solicitudService.aprobar(id));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
@@ -80,13 +81,9 @@ public class SolicitudAdopcionController {
 
     // ─── PUT: Rechazar solicitud ───────────────────────────
     @PutMapping("/{id}/rechazar")
-    public ResponseEntity<SolicitudAdopcion> rechazar(
-            @PathVariable Integer id,
-            @RequestParam String observaciones) {
+    public ResponseEntity<SolicitudAdopcion> rechazar(@PathVariable Integer id, @RequestParam String observaciones) {
         try {
-            SolicitudAdopcion solicitud =
-                    solicitudService.rechazar(id, observaciones);
-            return ResponseEntity.ok(solicitud);
+            return ResponseEntity.ok(solicitudService.rechazar(id, observaciones));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
