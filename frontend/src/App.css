@@ -1,3 +1,4 @@
+/* Quita cualquier margin o padding que fuerce espacios */
 * {
   margin: 0;
   padding: 0;
@@ -5,6 +6,11 @@
 }
 
 body {
+  background-color: #fbf9f8; /* El color surface de tu tema */
+}
+
+/* Esta clase es la única que necesitas para asegurar que el contenido no quede oculto */
+.main-content {
+  min-height: 100vh;
   width: 100%;
-  overflow-x: hidden; /* Evita scroll horizontal innecesario */
 }

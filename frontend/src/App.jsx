@@ -42,7 +42,7 @@ const AppContent = ({ userRole, setUserRole }) => {
       <Navbar userRole={userRole} onLogout={handleLogout} />
       
       {/* Margen superior para el Navbar fijo */}
-      <div className="main-content pt-20">
+      <div className="main-content ">
         <Routes>
           {/* Ruta Raíz: Redirección inteligente basada en rol */}
           <Route path="/" element={
