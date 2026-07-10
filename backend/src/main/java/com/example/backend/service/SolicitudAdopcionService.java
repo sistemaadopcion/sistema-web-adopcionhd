@@ -16,7 +16,6 @@ public class SolicitudAdopcionService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private MascotaRepository mascotaRepository;
 
-    // ─── Registrar nueva solicitud ─────────────────────────
     public SolicitudAdopcion registrar(SolicitudAdopcion solicitud) {
         Usuario usuario = usuarioRepository.findById(solicitud.getUsuario().getId())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -30,6 +29,8 @@ public class SolicitudAdopcionService {
 
         solicitud.setUsuario(usuario);
         solicitud.setMascota(mascota);
+        // FORZAMOS EL ESTADO QUE TU BD ACEPTA
+        solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.ENVIADA);
         
         mascota.setEstado(Mascota.EstadoMascota.EN_PROCESO);
         mascotaRepository.save(mascota);
@@ -37,36 +38,12 @@ public class SolicitudAdopcionService {
         return solicitudRepository.save(solicitud);
     }
 
-    // ─── Listar todas las solicitudes ──────────────────────
-    @Transactional(readOnly = true)
-    public List<SolicitudAdopcion> listarTodas() {
-        return solicitudRepository.findAll();
-    }
-
-    // ─── Buscar por ID ─────────────────────────────────────
-    @Transactional(readOnly = true)
-    public Optional<SolicitudAdopcion> buscarPorId(Integer id) {
-        return solicitudRepository.findById(id);
-    }
-
-    // ─── Listar por usuario ────────────────────────────────
-    @Transactional(readOnly = true)
-    public List<SolicitudAdopcion> listarPorUsuario(Integer usuarioId) {
-        return solicitudRepository.findByUsuarioId(usuarioId);
-    }
-
-    // ─── Listar por estado ────────────────────────────────
-    @Transactional(readOnly = true)
-    public List<SolicitudAdopcion> listarPorEstado(SolicitudAdopcion.EstadoSolicitud estado) {
-        return solicitudRepository.findByEstadoSolicitud(estado);
-    }
-
-    // ─── Aprobar solicitud ─────────────────────────────────
     public SolicitudAdopcion aprobar(Integer id) {
         SolicitudAdopcion solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
-        solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.APROBADO);
+        // CORREGIDO: APROBADA en lugar de APROBADO
+        solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.APROBADA);
 
         Mascota mascota = solicitud.getMascota();
         mascota.setEstado(Mascota.EstadoMascota.ADOPTADO);
@@ -75,12 +52,12 @@ public class SolicitudAdopcionService {
         return solicitudRepository.save(solicitud);
     }
 
-    // ─── Rechazar solicitud ────────────────────────────────
     public SolicitudAdopcion rechazar(Integer id, String observaciones) {
         SolicitudAdopcion solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
-        solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.RECHAZADO);
+        // CORREGIDO: RECHAZADA en lugar de RECHAZADO
+        solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.RECHAZADA);
         solicitud.setObservaciones(observaciones);
 
         Mascota mascota = solicitud.getMascota();
@@ -90,11 +67,18 @@ public class SolicitudAdopcionService {
         return solicitudRepository.save(solicitud);
     }
 
-    // ─── Eliminar solicitud ────────────────────────────────
+    // --- MÉTODOS DE LECTURA (READ-ONLY) ---
+    @Transactional(readOnly = true)
+    public List<SolicitudAdopcion> listarTodas() { return solicitudRepository.findAll(); }
+    
+    @Transactional(readOnly = true)
+    public Optional<SolicitudAdopcion> buscarPorId(Integer id) { return solicitudRepository.findById(id); }
+    
+    @Transactional(readOnly = true)
+    public List<SolicitudAdopcion> listarPorUsuario(Integer usuarioId) { return solicitudRepository.findByUsuarioId(usuarioId); }
+
     public void eliminar(Integer id) {
-        if (!solicitudRepository.existsById(id)) {
-            throw new RuntimeException("Solicitud no encontrada");
-        }
+        if (!solicitudRepository.existsById(id)) throw new RuntimeException("Solicitud no encontrada");
         solicitudRepository.deleteById(id);
     }
 }

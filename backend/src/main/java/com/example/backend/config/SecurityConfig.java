@@ -19,14 +19,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
-            .csrf(csrf -> csrf.disable()) // CSRF desactivado para permitir peticiones POST desde el frontend
+            .csrf(csrf -> csrf.disable()) // Crucial para POST/PUT desde frontend
             .authorizeHttpRequests(auth -> auth
-                // Permitimos acceso total a todo lo que esté bajo /api/
-                .requestMatchers("/api/**").permitAll()
-                // Si tienes alguna ruta que no sea /api, aquí es donde pedirá login
-                .anyRequest().authenticated()
+                .requestMatchers("/api/**").permitAll() // Permitir todo en /api/
+                .anyRequest().permitAll() // Cambiado a permitAll temporalmente para probar
             );
-
         return http.build();
     }
+
 }

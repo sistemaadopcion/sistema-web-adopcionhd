@@ -18,18 +18,23 @@ public class SolicitudAdopcion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "fecha_solicitud", nullable = false)
     private LocalDateTime fechaSolicitud = LocalDateTime.now();
 
     @Enumerated(EnumType.STRING)
-    private EstadoSolicitud estadoSolicitud = EstadoSolicitud.PENDIENTE;
+    @Column(name = "estado_solicitud", nullable = false)
+    private EstadoSolicitud estadoSolicitud = EstadoSolicitud.ENVIADA;
 
+    @Column(name = "tipo_vivienda")
     private String tipoVivienda;
+
+    @Column(name = "espacio_adecuado")
     private String espacioAdecuado;
     
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "motivo", columnDefinition = "TEXT")
     private String motivo;
     
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "observaciones", columnDefinition = "TEXT")
     private String observaciones;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,5 +47,5 @@ public class SolicitudAdopcion {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Mascota mascota;
 
-    public enum EstadoSolicitud { PENDIENTE, APROBADO, RECHAZADO }
+    public enum EstadoSolicitud { ENVIADA, APROBADA, RECHAZADA }
 }

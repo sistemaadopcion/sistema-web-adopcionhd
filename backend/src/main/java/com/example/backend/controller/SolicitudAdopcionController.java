@@ -11,8 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/solicitudes-adopcion")
@@ -27,13 +27,11 @@ public class SolicitudAdopcionController {
     @Autowired
     private MascotaRepository mascotaRepository;
 
-    // ─── GET: Listar todas las solicitudes ─────────────────
     @GetMapping
     public ResponseEntity<List<SolicitudAdopcion>> listarTodas() {
         return ResponseEntity.ok(solicitudService.listarTodas());
     }
 
-    // ─── GET: Buscar solicitud por ID ──────────────────────
     @GetMapping("/{id}")
     public ResponseEntity<SolicitudAdopcion> buscarPorId(@PathVariable Integer id) {
         return solicitudService.buscarPorId(id)
@@ -41,35 +39,48 @@ public class SolicitudAdopcionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ─── POST: Registrar nueva solicitud ───────────────────
     @PostMapping
     public ResponseEntity<?> registrar(@RequestBody SolicitudAdopcion solicitud) {
         try {
-            // Validar existencia de usuario y mascota
-            Usuario usuario = usuarioRepository.findById(solicitud.getUsuario().getId())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-            Mascota mascota = mascotaRepository.findById(solicitud.getMascota().getId())
-                    .orElseThrow(() -> new RuntimeException("Mascota no encontrada"));
+            // 1. Validar IDs
+            if (solicitud.getUsuario() == null || solicitud.getUsuario().getId() == null ||
+                solicitud.getMascota() == null || solicitud.getMascota().getId() == null) {
+                return ResponseEntity.badRequest().body("Usuario y Mascota son obligatorios");
+            }
 
-            // Asignar entidades completas
+            // 2. Buscar entidades reales
+            Usuario usuario = usuarioRepository.findById(solicitud.getUsuario().getId())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + solicitud.getUsuario().getId()));
+            Mascota mascota = mascotaRepository.findById(solicitud.getMascota().getId())
+                    .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + solicitud.getMascota().getId()));
+
+            // 3. Asignación forzada de campos críticos
             solicitud.setUsuario(usuario);
             solicitud.setMascota(mascota);
-            solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.PENDIENTE);
             
+            // IMPORTANTE: Sincronizado con el valor real de tu BD (ENVIADA)
+            solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.ENVIADA);
+            
+            if (solicitud.getFechaSolicitud() == null) {
+                solicitud.setFechaSolicitud(LocalDateTime.now());
+            }
+
+            // 4. Guardar
             SolicitudAdopcion registrada = solicitudService.registrar(solicitud);
             return ResponseEntity.status(HttpStatus.CREATED).body(registrada);
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al registrar solicitud: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Error crítico al registrar: " + e.getMessage());
         }
     }
 
-    // ─── GET: Listar solicitudes por usuario ───────────────
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<List<SolicitudAdopcion>> listarPorUsuario(@PathVariable Integer usuarioId) {
         return ResponseEntity.ok(solicitudService.listarPorUsuario(usuarioId));
     }
 
-    // ─── PUT: Aprobar solicitud ────────────────────────────
     @PutMapping("/{id}/aprobar")
     public ResponseEntity<SolicitudAdopcion> aprobar(@PathVariable Integer id) {
         try {
@@ -79,7 +90,6 @@ public class SolicitudAdopcionController {
         }
     }
 
-    // ─── PUT: Rechazar solicitud ───────────────────────────
     @PutMapping("/{id}/rechazar")
     public ResponseEntity<SolicitudAdopcion> rechazar(@PathVariable Integer id, @RequestParam String observaciones) {
         try {
@@ -89,7 +99,6 @@ public class SolicitudAdopcionController {
         }
     }
 
-    // ─── DELETE: Eliminar solicitud ────────────────────────
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         try {
