@@ -21,14 +21,15 @@ public class SolicitudAdopcion {
     @Column(name = "fecha_solicitud", nullable = false)
     private LocalDateTime fechaSolicitud = LocalDateTime.now();
 
+    // Ajustado para coincidir con el CHECK CONSTRAINT de la base de datos
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_solicitud", nullable = false)
+    @Column(name = "estado_solicitud", nullable = false, length = 20)
     private EstadoSolicitud estadoSolicitud = EstadoSolicitud.ENVIADA;
 
-    @Column(name = "tipo_vivienda")
+    @Column(name = "tipo_vivienda", length = 50)
     private String tipoVivienda;
 
-    @Column(name = "espacio_adecuado")
+    @Column(name = "espacio_adecuado", length = 10)
     private String espacioAdecuado;
     
     @Column(name = "motivo", columnDefinition = "TEXT")
@@ -37,15 +38,22 @@ public class SolicitudAdopcion {
     @Column(name = "observaciones", columnDefinition = "TEXT")
     private String observaciones;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // Cambiado a EAGER para evitar LazyInitializationException en el controlador
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usuario_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "solicitudes"})
     private Usuario usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "mascota_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "solicitudes"})
     private Mascota mascota;
 
-    public enum EstadoSolicitud { ENVIADA, APROBADA, RECHAZADA }
+    // Definición exacta de los estados permitidos por tu base de datos
+    public enum EstadoSolicitud { 
+        ENVIADA, 
+        EN_REVISION, 
+        APROBADA, 
+        DENEGADA 
+    }
 }

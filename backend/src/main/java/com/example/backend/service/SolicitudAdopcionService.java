@@ -62,19 +62,27 @@ public class SolicitudAdopcionService {
         return solicitudRepository.save(solicitud);
     }
 
-    public SolicitudAdopcion rechazar(Integer id, String observaciones) {
-        SolicitudAdopcion solicitud = solicitudRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+   public SolicitudAdopcion rechazar(Integer id, String observaciones) {
+    // 1. Buscar la solicitud
+    SolicitudAdopcion solicitud = solicitudRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
-        solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.RECHAZADA);
-        solicitud.setObservaciones(observaciones);
+    // 2. Asegurar que tenemos la mascota
+    Integer mascotaId = solicitud.getMascota().getId();
+    Mascota mascota = mascotaRepository.findById(mascotaId)
+            .orElseThrow(() -> new RuntimeException("Mascota no encontrada"));
 
-        Mascota mascota = solicitud.getMascota();
-        mascota.setEstado(Mascota.EstadoMascota.DISPONIBLE);
-        mascotaRepository.save(mascota);
+    // 3. CAMBIO CRÍTICO: Usamos DENEGADA (lo que espera tu DB)
+    solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.DENEGADA);
+    solicitud.setObservaciones(observaciones);
+    
+    // 4. Devolver la mascota a estado DISPONIBLE
+    mascota.setEstado(Mascota.EstadoMascota.DISPONIBLE);
 
-        return solicitudRepository.save(solicitud);
-    }
+    // 5. Guardar
+    mascotaRepository.save(mascota);
+    return solicitudRepository.save(solicitud);
+}
 
     @Transactional(readOnly = true)
     public List<SolicitudAdopcion> listarTodas() { return solicitudRepository.findAll(); }

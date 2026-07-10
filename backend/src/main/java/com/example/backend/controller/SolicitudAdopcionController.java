@@ -85,10 +85,17 @@ public class SolicitudAdopcionController {
     }
 
     @PutMapping("/{id}/rechazar")
-    public ResponseEntity<SolicitudAdopcion> rechazar(@PathVariable Integer id, @RequestParam(required = false) String observaciones) {
+public ResponseEntity<?> rechazar(@PathVariable Integer id, @RequestParam(required = false) String observaciones) {
+    try {
         String obs = (observaciones != null) ? observaciones : "Sin observaciones";
         return ResponseEntity.ok(solicitudService.rechazar(id, obs));
+    } catch (Exception e) {
+        // ESTO ES LO QUE NECESITAMOS:
+        // En lugar de devolver un error 500 oculto, devolveremos el mensaje de la excepción.
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                             .body("FALLA REAL: " + e.getMessage());
     }
+}
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {

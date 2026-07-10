@@ -8,16 +8,19 @@ export const obtenerSolicitudes = async () => {
 };
 
 export const actualizarEstadoSolicitud = async (id, nuevoEstado, observaciones = "Sin observaciones") => {
+  // Ahora el backend espera 'aprobar' o 'denegar' (o como lo hayas nombrado en tu Controller)
+  // Si tu @PutMapping en Java es "/{id}/rechazar", mantén la palabra 'rechazar'
+  // PERO cambia el valor del estado que envías si es necesario.
+  
   const accion = nuevoEstado === 'APROBADA' ? 'aprobar' : 'rechazar';
   
   let url = `${API_URL}/${id}/${accion}`;
   
-  if (nuevoEstado === 'RECHAZADA') {
+  // AHORA AQUÍ: Si el estado es DENEGADA, envíalo como tal si es que el backend lo espera
+  if (nuevoEstado === 'DENEGADA') {
     url += `?observaciones=${encodeURIComponent(observaciones)}`;
   }
   
-  // PARA EL PUT: No enviamos body, ni tampoco el header 'Content-Type' 
-  // que suele causar conflictos si no hay cuerpo JSON.
   const response = await fetch(url, {
     method: 'PUT'
   });
