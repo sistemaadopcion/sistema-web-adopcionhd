@@ -23,13 +23,24 @@ public class SolicitudAdopcionService {
         Mascota mascota = mascotaRepository.findById(solicitud.getMascota().getId())
                 .orElseThrow(() -> new RuntimeException("Mascota no encontrada"));
 
+        // 1. VALIDACIÓN: Evitar duplicados si ya tiene una solicitud enviada
+        boolean yaExiste = solicitudRepository.existsByUsuarioIdAndMascotaIdAndEstadoSolicitud(
+            usuario.getId(), 
+            mascota.getId(), 
+            SolicitudAdopcion.EstadoSolicitud.ENVIADA
+        );
+
+        if (yaExiste) {
+            throw new RuntimeException("Ya tienes una solicitud enviada para esta mascota. Por favor, espera a que sea revisada.");
+        }
+
+        // 2. VALIDACIÓN: Disponibilidad
         if (mascota.getEstado() != Mascota.EstadoMascota.DISPONIBLE) {
             throw new RuntimeException("La mascota no está disponible");
         }
 
         solicitud.setUsuario(usuario);
         solicitud.setMascota(mascota);
-        // FORZAMOS EL ESTADO QUE TU BD ACEPTA
         solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.ENVIADA);
         
         mascota.setEstado(Mascota.EstadoMascota.EN_PROCESO);
@@ -42,7 +53,6 @@ public class SolicitudAdopcionService {
         SolicitudAdopcion solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
-        // CORREGIDO: APROBADA en lugar de APROBADO
         solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.APROBADA);
 
         Mascota mascota = solicitud.getMascota();
@@ -56,7 +66,6 @@ public class SolicitudAdopcionService {
         SolicitudAdopcion solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
-        // CORREGIDO: RECHAZADA en lugar de RECHAZADO
         solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.RECHAZADA);
         solicitud.setObservaciones(observaciones);
 
@@ -67,7 +76,6 @@ public class SolicitudAdopcionService {
         return solicitudRepository.save(solicitud);
     }
 
-    // --- MÉTODOS DE LECTURA (READ-ONLY) ---
     @Transactional(readOnly = true)
     public List<SolicitudAdopcion> listarTodas() { return solicitudRepository.findAll(); }
     

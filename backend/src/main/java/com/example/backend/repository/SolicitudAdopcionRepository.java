@@ -22,4 +22,10 @@ public interface SolicitudAdopcionRepository extends JpaRepository<SolicitudAdop
     List<SolicitudAdopcion> findByUsuarioIdAndEstadoSolicitud(
             Integer usuarioId,
             SolicitudAdopcion.EstadoSolicitud estadoSolicitud);
+
+    // NUEVO: Validar si ya existe una solicitud activa para evitar duplicados
+    boolean existsByUsuarioIdAndMascotaIdAndEstadoSolicitud(
+            Integer usuarioId, 
+            Integer mascotaId, 
+            SolicitudAdopcion.EstadoSolicitud estadoSolicitud);
 }

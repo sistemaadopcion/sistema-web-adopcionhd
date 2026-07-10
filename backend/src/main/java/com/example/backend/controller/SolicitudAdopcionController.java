@@ -4,6 +4,7 @@ import com.example.backend.model.Mascota;
 import com.example.backend.model.SolicitudAdopcion;
 import com.example.backend.model.Usuario;
 import com.example.backend.repository.MascotaRepository;
+import com.example.backend.repository.SolicitudAdopcionRepository;
 import com.example.backend.repository.UsuarioRepository;
 import com.example.backend.service.SolicitudAdopcionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +19,10 @@ import java.util.List;
 @RequestMapping("/api/solicitudes-adopcion")
 public class SolicitudAdopcionController {
 
-    @Autowired
-    private SolicitudAdopcionService solicitudService;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private MascotaRepository mascotaRepository;
+    @Autowired private SolicitudAdopcionService solicitudService;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private MascotaRepository mascotaRepository;
+    @Autowired private SolicitudAdopcionRepository solicitudRepository;
 
     @GetMapping
     public ResponseEntity<List<SolicitudAdopcion>> listarTodas() {
@@ -42,37 +39,37 @@ public class SolicitudAdopcionController {
     @PostMapping
     public ResponseEntity<?> registrar(@RequestBody SolicitudAdopcion solicitud) {
         try {
-            // 1. Validar IDs
-            if (solicitud.getUsuario() == null || solicitud.getUsuario().getId() == null ||
-                solicitud.getMascota() == null || solicitud.getMascota().getId() == null) {
+            if (solicitud.getUsuario() == null || solicitud.getMascota() == null) {
                 return ResponseEntity.badRequest().body("Usuario y Mascota son obligatorios");
             }
 
-            // 2. Buscar entidades reales
-            Usuario usuario = usuarioRepository.findById(solicitud.getUsuario().getId())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + solicitud.getUsuario().getId()));
-            Mascota mascota = mascotaRepository.findById(solicitud.getMascota().getId())
-                    .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + solicitud.getMascota().getId()));
+            // 1. Validar si ya existe una solicitud ENVIADA para esta mascota
+            boolean existe = solicitudRepository.existsByUsuarioIdAndMascotaIdAndEstadoSolicitud(
+                    solicitud.getUsuario().getId(), 
+                    solicitud.getMascota().getId(), 
+                    SolicitudAdopcion.EstadoSolicitud.ENVIADA
+            );
 
-            // 3. Asignación forzada de campos críticos
-            solicitud.setUsuario(usuario);
-            solicitud.setMascota(mascota);
-            
-            // IMPORTANTE: Sincronizado con el valor real de tu BD (ENVIADA)
-            solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.ENVIADA);
-            
-            if (solicitud.getFechaSolicitud() == null) {
-                solicitud.setFechaSolicitud(LocalDateTime.now());
+            if (existe) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Ya tienes una solicitud enviada para esta mascota. Espera a que sea revisada.");
             }
 
-            // 4. Guardar
-            SolicitudAdopcion registrada = solicitudService.registrar(solicitud);
-            return ResponseEntity.status(HttpStatus.CREATED).body(registrada);
+            // 2. Buscar entidades
+            Usuario usuario = usuarioRepository.findById(solicitud.getUsuario().getId())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            Mascota mascota = mascotaRepository.findById(solicitud.getMascota().getId())
+                    .orElseThrow(() -> new RuntimeException("Mascota no encontrada"));
+
+            solicitud.setUsuario(usuario);
+            solicitud.setMascota(mascota);
+            solicitud.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.ENVIADA);
+            solicitud.setFechaSolicitud(LocalDateTime.now());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(solicitudService.registrar(solicitud));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body("Error crítico al registrar: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
 
@@ -83,29 +80,19 @@ public class SolicitudAdopcionController {
 
     @PutMapping("/{id}/aprobar")
     public ResponseEntity<SolicitudAdopcion> aprobar(@PathVariable Integer id) {
-        try {
-            return ResponseEntity.ok(solicitudService.aprobar(id));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        try { return ResponseEntity.ok(solicitudService.aprobar(id)); }
+        catch (RuntimeException e) { return ResponseEntity.notFound().build(); }
     }
 
     @PutMapping("/{id}/rechazar")
-    public ResponseEntity<SolicitudAdopcion> rechazar(@PathVariable Integer id, @RequestParam String observaciones) {
-        try {
-            return ResponseEntity.ok(solicitudService.rechazar(id, observaciones));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<SolicitudAdopcion> rechazar(@PathVariable Integer id, @RequestParam(required = false) String observaciones) {
+        String obs = (observaciones != null) ? observaciones : "Sin observaciones";
+        return ResponseEntity.ok(solicitudService.rechazar(id, obs));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        try {
-            solicitudService.eliminar(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        solicitudService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }

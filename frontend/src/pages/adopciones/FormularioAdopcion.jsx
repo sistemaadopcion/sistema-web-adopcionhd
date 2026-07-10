@@ -24,7 +24,6 @@ function FormularioAdopcion({ mascota, onVolver }) {
       return;
     }
 
-    // Estructura que coincide exactamente con tu entidad Java
     const solicitudData = {
       tipoVivienda: formData.tipoVivienda,
       espacioAdecuado: formData.espacioAdecuado,
@@ -32,6 +31,7 @@ function FormularioAdopcion({ mascota, onVolver }) {
       observaciones: formData.otrasMascotas,
       usuario: { id: parseInt(userId) },
       mascota: { id: mascota.id }
+      // El estado se asigna automáticamente en el Backend como 'ENVIADA'
     };
 
     try {
@@ -39,8 +39,13 @@ function FormularioAdopcion({ mascota, onVolver }) {
       alert("¡Solicitud enviada correctamente!");
       onVolver(); 
     } catch (error) {
-      console.error("Error completo:", error);
-      alert("Error al enviar la solicitud al servidor. Revisa los datos.");
+      // Manejo específico del error de duplicado (409 Conflict)
+      if (error.message.includes("409") || error.message.includes("Ya tienes")) {
+        alert("Ya tienes una solicitud enviada para esta mascota. Espera a que sea revisada.");
+      } else {
+        console.error("Error al enviar:", error);
+        alert("Error al enviar la solicitud. Verifica que la mascota esté disponible.");
+      }
     }
   };
 

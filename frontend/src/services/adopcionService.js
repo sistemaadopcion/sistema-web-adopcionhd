@@ -9,12 +9,16 @@ export const obtenerSolicitudes = async () => {
   return response.json();
 };
 
-// 2. Aprobar o Rechazar una solicitud
+// 2. Aprobar o Rechazar una solicitud (CORREGIDO)
 export const actualizarEstadoSolicitud = async (id, nuevoEstado, observaciones = "Sin observaciones") => {
-  const accion = nuevoEstado === 'APROBADO' ? 'aprobar' : 'rechazar';
+  // Ajustamos los nombres para coincidir con el backend
+  const accion = nuevoEstado === 'APROBADA' ? 'aprobar' : 'rechazar';
   
+  // URL base sin parámetros
   let url = `${API_URL}/${id}/${accion}`;
-  if (nuevoEstado === 'RECHAZADO') {
+  
+  // Solo si es rechazar, añadimos el parámetro
+  if (nuevoEstado === 'RECHAZADA') {
     url += `?observaciones=${encodeURIComponent(observaciones)}`;
   }
   
@@ -23,7 +27,7 @@ export const actualizarEstadoSolicitud = async (id, nuevoEstado, observaciones =
     headers: { 'Content-Type': 'application/json' },
   });
   
-  if (!response.ok) throw new Error(`Error al ${accion} la solicitud`);
+  if (!response.ok) throw new Error("Error en el servidor");
   return response.json();
 };
 
