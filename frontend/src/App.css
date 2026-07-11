@@ -7,6 +7,9 @@
 
 body {
   background-color: #fbf9f8; /* El color surface de tu tema */
+  
+    padding-top: 80px; /* Ajusta según la altura real de tu navbar */
+
 }
 
 /* Esta clase es la única que necesitas para asegurar que el contenido no quede oculto */
