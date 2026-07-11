@@ -21,29 +21,35 @@ const Solicitudes = () => {
     }
   };
 
-  const generarReporte = () => {
+  const generarReportePDF = () => {
+    if (!solicitudes || solicitudes.length === 0) {
+      alert("No hay solicitudes para generar el reporte.");
+      return;
+    }
+
     const doc = new jsPDF();
+    
+    // Título del reporte
     doc.setFontSize(18);
-    doc.text("Reporte General de Solicitudes", 14, 22);
+    doc.text("Reporte de Solicitudes de Adopción", 14, 20);
     doc.setFontSize(10);
-    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, 14, 30);
+    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, 14, 28);
 
-    const tableColumn = ["Adoptante", "Mascota", "Vivienda", "Estado"];
-    const tableRows = solicitudes.map(s => [
-      s.usuario?.nombre || "N/A",
-      s.mascota?.nombre || "N/A",
-      s.tipoVivienda || "N/A",
-      s.estadoSolicitud || "N/A"
-    ]);
-
+    // Configuración de la tabla
     doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 40,
-      headStyles: { fillColor: [15, 23, 42] }
+      startY: 35,
+      head: [['ID', 'Adoptante', 'Mascota', 'Estado', 'Fecha']],
+      body: solicitudes.map(s => [
+        s.id,
+        s.usuario?.nombre || 'N/A',
+        s.mascota?.nombre || 'N/A',
+        s.estadoSolicitud || 'N/A',
+        s.fechaRegistro || 'N/A'
+      ]),
+      headStyles: { fillColor: [15, 23, 42] } // Color azul oscuro a juego con tu diseño
     });
 
-    doc.save("reporte_solicitudes.pdf");
+    doc.save(`reporte_solicitudes_${new Date().getTime()}.pdf`);
   };
 
   const manejarEstado = async (id, nuevoEstado) => {
@@ -71,13 +77,14 @@ const Solicitudes = () => {
           <p style={{ color: '#64748b' }}>Administra y revisa las peticiones de adopción.</p>
         </div>
         <button 
-          onClick={generarReporte}
+          onClick={generarReportePDF}
           style={{ background: '#0f172a', color: 'white', padding: '12px 20px', borderRadius: '12px', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
         >
           📥 Descargar PDF
         </button>
       </header>
 
+      {/* Botones de filtro */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '25px' }}>
         {['ENVIADA', 'APROBADA', 'DENEGADA'].map((estado) => (
           <button 
@@ -95,6 +102,7 @@ const Solicitudes = () => {
         ))}
       </div>
 
+      {/* Tabla */}
       <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -124,6 +132,7 @@ const Solicitudes = () => {
         </table>
       </div>
 
+      {/* Modal de detalles */}
       {solicitudSeleccionada && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: 'white', padding: '40px', borderRadius: '24px', width: '450px' }}>
