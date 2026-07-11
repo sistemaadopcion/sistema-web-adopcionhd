@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from "jspdf-autotable"; // Importa la función autoTable explícitamente
 import { obtenerSolicitudes, actualizarEstadoSolicitud } from '../../services/adopcionService';
+// 1. Importas para listar y reportes desde solicitudService
+import { obtenerSolicitudes } from '../../services/solicitudService';
 
 const Solicitudes = () => {
   const [solicitudes, setSolicitudes] = useState([]);
