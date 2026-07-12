@@ -36,17 +36,20 @@ export const obtenerMascotasDisponibles = async () => {
 export const registrarMascota = async (mascotaData) => {
   const response = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(mascotaData),
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText);
+    const error = await response.text();
+    console.log(error); // <-- IMPORTANTE
+    throw new Error(error);
   }
-  
+
   return await response.json();
-}; 
+};
 
 // ─── PUT: Actualizar mascota ──────────────────────────
 export const actualizarMascota = async (id, mascotaData) => {
