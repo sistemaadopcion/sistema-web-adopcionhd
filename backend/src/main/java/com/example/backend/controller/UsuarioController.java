@@ -1,6 +1,9 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.AuthResponse;
+import com.example.backend.dto.LoginRequest;
 import com.example.backend.model.Usuario;
+import com.example.backend.security.JwtUtil;
 import com.example.backend.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +19,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     // ─── GET: Listar todos los usuarios ────────────────────
     @GetMapping
@@ -84,21 +90,26 @@ public class UsuarioController {
 
     // ─── POST: Iniciar Sesión ──────────────────────────────
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Usuario loginRequest) {
-        // Buscamos ignorando espacios accidentales en el correo
-        Optional<Usuario> usuarioOpt = usuarioService.buscarPorCorreo(loginRequest.getCorreo().trim());
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            Usuario usuario = usuarioService.autenticar(
+                    loginRequest.getCorreo().trim(),
+                    loginRequest.getContrasena().trim());
 
-        if (usuarioOpt.isPresent()) {
-            Usuario user = usuarioOpt.get();
-            // Comparamos usando .trim() para limpiar espacios invisibles de la base de
-            // datos
-            if (user.getContrasena().trim().equals(loginRequest.getContrasena().trim())) {
-                return ResponseEntity.ok(user);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta");
-            }
+            String token = jwtUtil.generateToken(usuario);
+
+            AuthResponse response = new AuthResponse(
+                    token,
+                    usuario.getId(),
+                    usuario.getNombre(),
+                    usuario.getApellido(),
+                    usuario.getCorreo(),
+                    usuario.getRol().name());
+
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
     }
 
     // Agrega esto dentro de tu clase UsuarioController

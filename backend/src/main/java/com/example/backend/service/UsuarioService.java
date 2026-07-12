@@ -3,9 +3,10 @@ package com.example.backend.service;
 import com.example.backend.model.Usuario;
 import com.example.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Map;    
-import java.util.HashMap; 
+import java.util.Map;
+import java.util.HashMap;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,9 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     // ─── Registrar nuevo usuario ───────────────────────────
     public Usuario registrar(Usuario usuario) {
         // Verificar si el correo ya existe
@@ -24,7 +28,20 @@ public class UsuarioService {
             throw new RuntimeException("El correo ya está registrado: "
                     + usuario.getCorreo());
         }
+        usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
         return usuarioRepository.save(usuario);
+    }
+
+    // ─── Autenticar usuario (login) ────────────────────────
+    public Usuario autenticar(String correo, String contrasenaPlano) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!passwordEncoder.matches(contrasenaPlano, usuario.getContrasena())) {
+            throw new RuntimeException("Contraseña incorrecta");
+        }
+
+        return usuario;
     }
 
     // ─── Listar todos los usuarios ─────────────────────────
@@ -60,7 +77,7 @@ public class UsuarioService {
         // LÓGICA INTELIGENTE:
         // Solo actualizamos la contraseña si el frontend envió una nueva
         if (usuarioActualizado.getContrasena() != null && !usuarioActualizado.getContrasena().trim().isEmpty()) {
-            usuarioExistente.setContrasena(usuarioActualizado.getContrasena().trim());
+            usuarioExistente.setContrasena(passwordEncoder.encode(usuarioActualizado.getContrasena().trim()));
         }
 
         return usuarioRepository.save(usuarioExistente);
