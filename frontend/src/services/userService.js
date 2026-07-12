@@ -65,13 +65,19 @@ export const actualizarUsuario = async (id, userData) => {
   return await response.json();
 };
 
-export const eliminarUsuario = async (id) => {
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: "DELETE"
+export const cambiarEstadoUsuario = async (id) => {
+  const response = await fetch(`${API_URL}/${id}/estado`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
-  
-  if (!response.ok) throw new Error("Error al eliminar el usuario");
-  return true;
+
+  if (!response.ok) {
+    throw new Error("No se pudo cambiar el estado del usuario.");
+  }
+
+  return await response.json();
 };
 
 // ─── DASHBOARD ──────────────────────────────────────────

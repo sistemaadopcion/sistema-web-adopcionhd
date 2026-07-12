@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
   obtenerUsuarios,
-  eliminarUsuario,
   actualizarUsuario,
+  cambiarEstadoUsuario,
 } from "../../services/userService";
 
 const Usuarios = () => {
@@ -100,7 +100,32 @@ const Usuarios = () => {
                   </td>
                   <td style={{padding: '16px'}}>
                     <button onClick={() => {setEditingId(u.id); setEditForm(u);}} style={{background: 'none', border: 'none', cursor: 'pointer'}}>✏️</button>
-                    <button onClick={() => eliminarUsuario(u.id).then(cargarUsuarios)} style={{background: 'none', border: 'none', cursor: 'pointer'}}>🗑️</button>
+                   <button
+  onClick={async () => {
+    const accion = u.estado ? "desactivar" : "activar";
+
+    if (!window.confirm(`¿Deseas ${accion} este usuario?`)) return;
+
+    try {
+      await cambiarEstadoUsuario(u.id);
+      cargarUsuarios();
+    } catch (error) {
+      alert(error.message);
+    }
+  }}
+  style={{
+    background: u.estado ? "#f59e0b" : "#22c55e",
+    color: "white",
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    marginLeft: "8px",
+    fontWeight: "600",
+  }}
+>
+  {u.estado ? "🔒 Desactivar" : "🔓 Activar"}
+</button>
                   </td>
                 </>
               )}
