@@ -53,7 +53,7 @@ const generarReportePDF = () => {
   doc.setFont("helvetica","bold");
   doc.setFontSize(22);
 
-  doc.text("HUELLITAS HOME",105,15,{align:"center"});
+  doc.text("CAN MARTÍN",105,15,{align:"center"});
 
   doc.setFontSize(12);
 
@@ -99,7 +99,7 @@ const generarReportePDF = () => {
   );
 
   doc.text(
-      `Sistema: Huellitas Home`,
+      `Sistema: Can Martín `,
       15,
       72
   );
