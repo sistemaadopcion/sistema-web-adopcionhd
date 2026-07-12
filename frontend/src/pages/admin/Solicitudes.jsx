@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import jsPDF from 'jspdf';
+import React, { useEffect, useState } from "react";
+import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; // Importa la función autoTable explícitamente
-import { obtenerSolicitudes, actualizarEstadoSolicitud } from '../../services/adopcionService';
-
+import {
+  obtenerSolicitudes,
+  actualizarEstadoSolicitud,
+} from "../../services/adopcionService";
 
 const Solicitudes = () => {
   const [solicitudes, setSolicitudes] = useState([]);
-  const [filtro, setFiltro] = useState('ENVIADA');
+  const [filtro, setFiltro] = useState("ENVIADA");
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ const Solicitudes = () => {
     }
 
     const doc = new jsPDF();
-    
+
     // Título del reporte
     doc.setFontSize(18);
     doc.text("Reporte de Solicitudes de Adopción", 14, 20);
@@ -39,15 +41,15 @@ const Solicitudes = () => {
     // Configuración de la tabla
     doc.autoTable({
       startY: 35,
-      head: [['ID', 'Adoptante', 'Mascota', 'Estado', 'Fecha']],
-      body: solicitudes.map(s => [
+      head: [["ID", "Adoptante", "Mascota", "Estado", "Fecha"]],
+      body: solicitudes.map((s) => [
         s.id,
-        s.usuario?.nombre || 'N/A',
-        s.mascota?.nombre || 'N/A',
-        s.estadoSolicitud || 'N/A',
-        s.fechaRegistro || 'N/A'
+        s.usuario?.nombre || "N/A",
+        s.mascota?.nombre || "N/A",
+        s.estadoSolicitud || "N/A",
+        s.fechaRegistro || "N/A",
       ]),
-      headStyles: { fillColor: [15, 23, 42] } // Color azul oscuro a juego con tu diseño
+      headStyles: { fillColor: [15, 23, 42] }, // Color azul oscuro a juego con tu diseño
     });
 
     doc.save(`reporte_solicitudes_${new Date().getTime()}.pdf`);
@@ -64,92 +66,377 @@ const Solicitudes = () => {
   };
 
   const getBadgeStyle = (estado) => {
-    const base = { padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase' };
-    if (estado === 'ENVIADA') return { ...base, background: '#fef3c7', color: '#92400e' };
-    if (estado === 'APROBADA') return { ...base, background: '#dcfce7', color: '#166534' };
-    return { ...base, background: '#fee2e2', color: '#991b1b' };
+    const base = {
+      padding: "4px 12px",
+      borderRadius: "20px",
+      fontSize: "0.75rem",
+      fontWeight: "bold",
+      textTransform: "uppercase",
+    };
+    if (estado === "ENVIADA")
+      return { ...base, background: "#fef3c7", color: "#92400e" };
+    if (estado === "APROBADA")
+      return { ...base, background: "#dcfce7", color: "#166534" };
+    return { ...base, background: "#fee2e2", color: "#991b1b" };
   };
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1100px', margin: 'auto', fontFamily: 'sans-serif' }}>
-      <header style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div
+      style={{
+        padding: "40px",
+        maxWidth: "1100px",
+        margin: "auto",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "35px",
+          padding: "30px",
+          background: "linear-gradient(135deg,#0f172a,#1e3a8a)",
+          borderRadius: "24px",
+          color: "#fff",
+          boxShadow: "0 15px 40px rgba(0,0,0,.15)",
+        }}
+      >
         <div>
-          <h1 style={{ color: '#0f172a', fontSize: '2rem', margin: '0' }}>📋 Gestión de Solicitudes</h1>
-          <p style={{ color: '#64748b' }}>Administra y revisa las peticiones de adopción.</p>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "2rem",
+              fontWeight: "700",
+            }}
+          >
+            📋 Gestión de Solicitudes
+          </h1>
+
+          <p
+            style={{
+              marginTop: "10px",
+              opacity: 0.8,
+            }}
+          >
+            Revisa, aprueba o rechaza las solicitudes de adopción.
+          </p>
         </div>
-        <button 
+
+        <button
           onClick={generarReportePDF}
-          style={{ background: '#0f172a', color: 'white', padding: '12px 20px', borderRadius: '12px', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{
+            padding: "14px 24px",
+            background: "#fff",
+            color: "#0f172a",
+            border: "none",
+            borderRadius: "14px",
+            fontWeight: "700",
+            cursor: "pointer",
+            transition: ".3s",
+          }}
         >
           📥 Descargar PDF
         </button>
       </header>
 
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3,1fr)",
+          gap: "20px",
+          marginBottom: "30px",
+        }}
+      >
+        <div
+          style={{
+            background: "#fff",
+            padding: "25px",
+            borderRadius: "18px",
+            boxShadow: "0 8px 20px rgba(0,0,0,.08)",
+          }}
+        >
+          <h2 style={{ margin: 0, color: "#f59e0b" }}>
+            {solicitudes.filter((s) => s.estadoSolicitud === "ENVIADA").length}
+          </h2>
+
+          <p style={{ color: "#64748b" }}>Pendientes</p>
+        </div>
+
+        <div
+          style={{
+            background: "#fff",
+            padding: "25px",
+            borderRadius: "18px",
+            boxShadow: "0 8px 20px rgba(0,0,0,.08)",
+          }}
+        >
+          <h2 style={{ margin: 0, color: "#16a34a" }}>
+            {solicitudes.filter((s) => s.estadoSolicitud === "APROBADA").length}
+          </h2>
+
+          <p style={{ color: "#64748b" }}>Aprobadas</p>
+        </div>
+
+        <div
+          style={{
+            background: "#fff",
+            padding: "25px",
+            borderRadius: "18px",
+            boxShadow: "0 8px 20px rgba(0,0,0,.08)",
+          }}
+        >
+          <h2 style={{ margin: 0, color: "#dc2626" }}>
+            {solicitudes.filter((s) => s.estadoSolicitud === "DENEGADA").length}
+          </h2>
+
+          <p style={{ color: "#64748b" }}>Denegadas</p>
+        </div>
+      </div>
+
       {/* Botones de filtro */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '25px' }}>
-        {['ENVIADA', 'APROBADA', 'DENEGADA'].map((estado) => (
-          <button 
+      <div style={{ display: "flex", gap: "8px", marginBottom: "25px" }}>
+        {["ENVIADA", "APROBADA", "DENEGADA"].map((estado) => (
+          <button
             key={estado}
             onClick={() => setFiltro(estado)}
             style={{
-              padding: '10px 24px', borderRadius: '12px', border: 'none', cursor: 'pointer',
-              background: filtro === estado ? '#0f172a' : '#f1f5f9',
-              color: filtro === estado ? 'white' : '#475569',
-              fontWeight: '600'
+              padding: "10px 24px",
+              borderRadius: "12px",
+              border: "none",
+              cursor: "pointer",
+              background: filtro === estado ? "#0f172a" : "#f1f5f9",
+              color: filtro === estado ? "white" : "#475569",
+              fontWeight: "600",
             }}
           >
-            {estado === 'ENVIADA' ? 'Pendientes' : estado}
+            {estado === "ENVIADA" ? "Pendientes" : estado}
           </button>
         ))}
       </div>
 
       {/* Tabla */}
-      <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: "22px",
+          overflow: "hidden",
+          boxShadow: "0 15px 35px rgba(0,0,0,.08)",
+        }}
+      >
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-              <th style={{ padding: '20px', textAlign: 'left', color: '#475569' }}>Adoptante</th>
-              <th style={{ padding: '20px', textAlign: 'left', color: '#475569' }}>Mascota</th>
-              <th style={{ padding: '20px', textAlign: 'center', color: '#475569' }}>Estado</th>
-              <th style={{ padding: '20px', textAlign: 'right', color: '#475569' }}>Acción</th>
+            <tr
+              style={{
+                background: "#0f172a",
+                color: "#fff",
+              }}
+            >
+              <th
+                style={{
+                  padding: "22px",
+                  fontWeight: "600",
+                  letterSpacing: ".5px",
+                }}
+              >
+                Adoptante
+              </th>
+              <th
+                style={{
+                  padding: "22px",
+                  fontWeight: "600",
+                  letterSpacing: ".5px",
+                }}
+              >
+                Mascota
+              </th>
+              <th
+                style={{
+                  padding: "22px",
+                  fontWeight: "600",
+                  letterSpacing: ".5px",
+                }}
+              >
+                Estado
+              </th>
+              <th
+                style={{
+                  padding: "22px",
+                  fontWeight: "600",
+                  letterSpacing: ".5px",
+                }}
+              >
+                Acción
+              </th>
             </tr>
           </thead>
           <tbody>
-            {solicitudes.filter(s => s.estadoSolicitud === filtro).map(s => (
-              <tr key={s.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '20px' }}>{s.usuario?.nombre}</td>
-                <td style={{ padding: '20px' }}>{s.mascota?.nombre}</td>
-                <td style={{ padding: '20px', textAlign: 'center' }}>
-                  <span style={getBadgeStyle(s.estadoSolicitud)}>{s.estadoSolicitud}</span>
-                </td>
-                <td style={{ padding: '20px', textAlign: 'right' }}>
-                  <button onClick={() => setSolicitudSeleccionada(s)} style={{ background: '#eff6ff', color: '#2563eb', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}>
-                    Ver Detalles
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {solicitudes
+              .filter((s) => s.estadoSolicitud === filtro)
+              .map((s) => (
+                <tr
+                  key={s.id}
+                  style={{
+                    transition: ".3s",
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#f8fafc";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#fff";
+                  }}
+                >
+                  <td style={{ padding: "20px" }}>{s.usuario?.nombre}</td>
+                  <td style={{ padding: "20px" }}>{s.mascota?.nombre}</td>
+                  <td style={{ padding: "20px", textAlign: "center" }}>
+                    <span style={getBadgeStyle(s.estadoSolicitud)}>
+                      {s.estadoSolicitud}
+                    </span>
+                  </td>
+                  <td style={{ padding: "20px", textAlign: "right" }}>
+                    <button
+                      onClick={() => setSolicitudSeleccionada(s)}
+                      style={{
+                        background: "#2563eb",
+                        color: "#fff",
+                        padding: "10px 18px",
+                        border: "none",
+                        borderRadius: "10px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: ".3s",
+                      }}
+                    >
+                      👁 Ver
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
       {/* Modal de detalles */}
       {solicitudSeleccionada && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'white', padding: '40px', borderRadius: '24px', width: '450px' }}>
-            <h2 style={{ marginTop: 0 }}>Solicitud de {solicitudSeleccionada.usuario?.nombre}</h2>
-            <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', margin: '20px 0' }}>
-              <p><strong>Mascota:</strong> {solicitudSeleccionada.mascota?.nombre}</p>
-              <p><strong>Vivienda:</strong> {solicitudSeleccionada.tipoVivienda}</p>
-              <p><strong>Motivo:</strong> {solicitudSeleccionada.motivo}</p>
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 42, 0.6)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              width: "520px",
+              borderRadius: "24px",
+              overflow: "hidden",
+              boxShadow: "0 25px 60px rgba(0,0,0,.25)",
+            }}
+          >
+            <div
+              style={{
+                padding: "25px",
+                background: "linear-gradient(135deg,#1e3a8a,#2563eb)",
+                color: "#fff",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Solicitud de adopción</h2>
+
+              <p style={{ opacity: 0.8 }}>
+                {solicitudSeleccionada.usuario?.nombre}
+              </p>
             </div>
-            {solicitudSeleccionada.estadoSolicitud === 'ENVIADA' && (
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => manejarEstado(solicitudSeleccionada.id, 'APROBADA')} style={{ flex: 1, padding: '14px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Aprobar ✅</button>
-                <button onClick={() => manejarEstado(solicitudSeleccionada.id, 'DENEGADA')} style={{ flex: 1, padding: '14px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Denegar ❌</button>
+
+            <div
+              style={{
+                padding: "30px",
+              }}
+            >
+              <p>
+                <strong>Mascota:</strong>{" "}
+                {solicitudSeleccionada.mascota?.nombre}
+              </p>
+
+              <p>
+                <strong>Tipo de vivienda:</strong>{" "}
+                {solicitudSeleccionada.tipoVivienda}
+              </p>
+
+              <p>
+                <strong>Motivo:</strong>
+              </p>
+
+              <div
+                style={{
+                  background: "#f8fafc",
+                  padding: "18px",
+                  borderRadius: "14px",
+                  lineHeight: "1.7",
+                }}
+              >
+                {solicitudSeleccionada.motivo}
+              </div>
+            </div>
+            {solicitudSeleccionada.estadoSolicitud === "ENVIADA" && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "15px",
+                  marginTop: "25px",
+                }}
+              >
+                <button
+                  style={{
+                    flex: 1,
+                    padding: "15px",
+                    background: "#16a34a",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "12px",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✅ Aprobar
+                </button>
+
+                <button
+                  style={{
+                    flex: 1,
+                    padding: "15px",
+                    background: "#dc2626",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "12px",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                  }}
+                >
+                  ❌ Denegar
+                </button>
               </div>
             )}
-            <button onClick={() => setSolicitudSeleccionada(null)} style={{ width: '100%', marginTop: '12px', padding: '12px', background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}>Cerrar</button>
+            <button
+              onClick={() => setSolicitudSeleccionada(null)}
+              style={{
+                width: "100%",
+                marginTop: "12px",
+                padding: "12px",
+                background: "transparent",
+                border: "none",
+                color: "#64748b",
+                cursor: "pointer",
+              }}
+            >
+              Cerrar
+            </button>
           </div>
         </div>
       )}
