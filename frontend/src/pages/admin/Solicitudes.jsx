@@ -55,21 +55,15 @@ const generarReportePDF = () => {
       "Fecha"
     ]],
 
-    body: solicitudes.map((s) => [
-
-      s.id,
-
-      s.usuario?.nombre || "Sin nombre",
-
-      s.mascota?.nombre || "Sin mascota",
-
-      s.estadoSolicitud,
-
-      s.fechaRegistro
-        ? new Date(s.fechaRegistro).toLocaleDateString()
-        : "-"
-
-    ]),
+   body: solicitudes.map((s) => [
+  s.id,
+  s.usuario?.nombre || "N/A",
+  s.mascota?.nombre || "N/A",
+  s.estadoSolicitud || "N/A",
+  s.fechaSolicitud
+    ? new Date(s.fechaSolicitud).toLocaleString("es-PE")
+    : "N/A",
+]),
 
     styles: {
       fontSize: 10,
