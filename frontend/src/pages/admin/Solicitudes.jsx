@@ -18,42 +18,78 @@ const Solicitudes = () => {
   const cargarSolicitudes = async () => {
     try {
       const data = await obtenerSolicitudes();
+      console.log(data);
       setSolicitudes(data);
     } catch (error) {
       console.error("Error al cargar:", error);
     }
   };
 
-  const generarReportePDF = () => {
-    if (!solicitudes || solicitudes.length === 0) {
-      alert("No hay solicitudes para generar el reporte.");
-      return;
+const generarReportePDF = () => {
+
+  if (solicitudes.length === 0) {
+    alert("No existen solicitudes.");
+    return;
+  }
+
+  const doc = new jsPDF();
+
+  doc.setFontSize(20);
+  doc.text("Reporte de Solicitudes de Adopción", 14, 18);
+
+  doc.setFontSize(11);
+  doc.text(
+    `Generado: ${new Date().toLocaleString()}`,
+    14,
+    28
+  );
+
+  autoTable(doc, {
+    startY: 38,
+
+    head: [[
+      "ID",
+      "Adoptante",
+      "Mascota",
+      "Estado",
+      "Fecha"
+    ]],
+
+    body: solicitudes.map((s) => [
+
+      s.id,
+
+      s.usuario?.nombre || "Sin nombre",
+
+      s.mascota?.nombre || "Sin mascota",
+
+      s.estadoSolicitud,
+
+      s.fechaRegistro
+        ? new Date(s.fechaRegistro).toLocaleDateString()
+        : "-"
+
+    ]),
+
+    styles: {
+      fontSize: 10,
+      cellPadding: 3,
+      halign: "center"
+    },
+
+    headStyles: {
+      fillColor: [15,23,42],
+      textColor: 255
+    },
+
+    alternateRowStyles: {
+      fillColor: [245,245,245]
     }
+  });
 
-    const doc = new jsPDF();
+  doc.save("ReporteSolicitudes.pdf");
 
-    // Título del reporte
-    doc.setFontSize(18);
-    doc.text("Reporte de Solicitudes de Adopción", 14, 20);
-    doc.setFontSize(10);
-    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, 14, 28);
-
-    // Configuración de la tabla
-    doc.autoTable({
-      startY: 35,
-      head: [["ID", "Adoptante", "Mascota", "Estado", "Fecha"]],
-      body: solicitudes.map((s) => [
-        s.id,
-        s.usuario?.nombre || "N/A",
-        s.mascota?.nombre || "N/A",
-        s.estadoSolicitud || "N/A",
-        s.fechaRegistro || "N/A",
-      ]),
-      headStyles: { fillColor: [15, 23, 42] }, // Color azul oscuro a juego con tu diseño
-    });
-
-    doc.save(`reporte_solicitudes_${new Date().getTime()}.pdf`);
-  };
+};
 
   const manejarEstado = async (id, nuevoEstado) => {
     try {
