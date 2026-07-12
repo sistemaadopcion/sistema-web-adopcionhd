@@ -27,63 +27,325 @@ const Solicitudes = () => {
 
 const generarReportePDF = () => {
 
-  if (solicitudes.length === 0) {
-    alert("No existen solicitudes.");
+  if (!solicitudes || solicitudes.length === 0) {
+    alert("No existen solicitudes para generar el reporte.");
     return;
   }
 
-  const doc = new jsPDF();
+  const doc = new jsPDF("p", "mm", "a4");
 
-  doc.setFontSize(20);
-  doc.text("Reporte de Solicitudes de Adopción", 14, 18);
+  //==========================
+  // COLORES
+  //==========================
 
-  doc.setFontSize(11);
+  const azul = [15, 23, 42];
+  const naranja = [249, 115, 22];
+  const gris = [100, 116, 139];
+
+  //==========================
+  // ENCABEZADO
+  //==========================
+
+  doc.setFillColor(...azul);
+  doc.rect(0, 0, 210, 35, "F");
+
+  doc.setTextColor(255,255,255);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(22);
+
+  doc.text("HUELLITAS HOME",105,15,{align:"center"});
+
+  doc.setFontSize(12);
+
   doc.text(
-    `Generado: ${new Date().toLocaleString()}`,
-    14,
-    28
+      "Sistema de Gestión de Adopciones",
+      105,
+      24,
+      {align:"center"}
   );
 
-  autoTable(doc, {
-    startY: 38,
+  doc.setDrawColor(...naranja);
+  doc.setLineWidth(0.8);
+  doc.line(15,40,195,40);
 
-    head: [[
-      "ID",
-      "Adoptante",
-      "Mascota",
-      "Estado",
-      "Fecha"
-    ]],
+  //==========================
+  // TITULO
+  //==========================
 
-   body: solicitudes.map((s) => [
-  s.id,
-  s.usuario?.nombre || "N/A",
-  s.mascota?.nombre || "N/A",
-  s.estadoSolicitud || "N/A",
-  s.fechaSolicitud
-    ? new Date(s.fechaSolicitud).toLocaleString("es-PE")
-    : "N/A",
-]),
+  doc.setTextColor(0,0,0);
+  doc.setFontSize(18);
+  doc.setFont("helvetica","bold");
 
-    styles: {
-      fontSize: 10,
-      cellPadding: 3,
-      halign: "center"
-    },
+  doc.text(
+      "REPORTE GENERAL DE SOLICITUDES",
+      105,
+      50,
+      {align:"center"}
+  );
 
-    headStyles: {
-      fillColor: [15,23,42],
-      textColor: 255
-    },
+  doc.setFontSize(10);
+  doc.setFont("helvetica","normal");
 
-    alternateRowStyles: {
-      fillColor: [245,245,245]
-    }
+  doc.text(
+      `Fecha de generación: ${new Date().toLocaleDateString("es-PE")}`,
+      15,
+      60
+  );
+
+  doc.text(
+      `Hora: ${new Date().toLocaleTimeString("es-PE")}`,
+      15,
+      66
+  );
+
+  doc.text(
+      `Sistema: Huellitas Home`,
+      15,
+      72
+  );
+
+  //==========================
+  // ESTADÍSTICAS
+  //==========================
+
+  const pendientes =
+      solicitudes.filter(
+          s => s.estadoSolicitud==="ENVIADA"
+      ).length;
+
+  const aprobadas =
+      solicitudes.filter(
+          s => s.estadoSolicitud==="APROBADA"
+      ).length;
+
+  const denegadas =
+      solicitudes.filter(
+          s => s.estadoSolicitud==="DENEGADA"
+      ).length;
+
+  const total = solicitudes.length;
+
+//==========================================
+// TARJETAS DE RESUMEN
+//==========================================
+
+const dibujarCard = (
+  x,
+  y,
+  titulo,
+  valor,
+  color
+) => {
+
+  doc.setFillColor(248,250,252);
+  doc.roundedRect(x, y, 40, 22, 3, 3, "F");
+
+  doc.setDrawColor(...color);
+  doc.setLineWidth(1.2);
+  doc.roundedRect(x, y, 40, 22, 3, 3);
+
+  doc.setTextColor(...gris);
+  doc.setFontSize(9);
+  doc.setFont("helvetica","normal");
+
+  doc.text(titulo, x + 20, y + 8, {
+    align: "center"
   });
 
-  doc.save("ReporteSolicitudes.pdf");
+  doc.setTextColor(...color);
+  doc.setFontSize(16);
+  doc.setFont("helvetica","bold");
+
+  doc.text(
+    valor.toString(),
+    x + 20,
+    y + 17,
+    {
+      align: "center"
+    }
+  );
 
 };
+
+dibujarCard(
+  15,
+  82,
+  "TOTAL",
+  total,
+  azul
+);
+
+dibujarCard(
+  60,
+  82,
+  "PENDIENTES",
+  pendientes,
+  [245,158,11]
+);
+
+dibujarCard(
+  105,
+  82,
+  "APROBADAS",
+  aprobadas,
+  [22,163,74]
+);
+
+dibujarCard(
+  150,
+  82,
+  "DENEGADAS",
+  denegadas,
+  [220,38,38]
+);
+
+//==========================================
+// TÍTULO DE LA TABLA
+//==========================================
+
+doc.setFontSize(13);
+doc.setFont("helvetica","bold");
+doc.setTextColor(...azul);
+
+doc.text(
+  "Detalle de Solicitudes",
+  15,
+  118
+);
+
+//==========================================
+// TABLA DE SOLICITUDES
+//==========================================
+
+autoTable(doc, {
+  startY: 123,
+
+  head: [[
+    "ID",
+    "Adoptante",
+    "Mascota",
+    "Vivienda",
+    "Estado",
+    "Fecha"
+  ]],
+
+  body: solicitudes.map((s) => [
+
+    s.id,
+
+    s.usuario?.nombre || "N/A",
+
+    s.mascota?.nombre || "N/A",
+
+    s.tipoVivienda || "-",
+
+    s.estadoSolicitud,
+
+    s.fechaSolicitud
+      ? new Date(s.fechaSolicitud).toLocaleDateString("es-PE")
+      : "-"
+
+  ]),
+
+  theme: "grid",
+
+  styles: {
+    fontSize: 9,
+    cellPadding: 4,
+    valign: "middle",
+    halign: "center",
+    lineColor: [220,220,220],
+    lineWidth: 0.2
+  },
+
+  headStyles: {
+    fillColor: azul,
+    textColor: [255,255,255],
+    fontStyle: "bold",
+    halign: "center"
+  },
+
+  alternateRowStyles: {
+    fillColor: [248,250,252]
+  },
+
+  bodyStyles: {
+    textColor: [60,60,60]
+  },
+
+  margin: {
+    left: 15,
+    right: 15
+  }
+});
+
+//==========================================
+// PIE DE PÁGINA
+//==========================================
+
+const paginas = doc.getNumberOfPages();
+
+for (let i = 1; i <= paginas; i++) {
+
+  doc.setPage(i);
+
+  doc.setDrawColor(...naranja);
+
+  doc.line(
+    15,
+    285,
+    195,
+    285
+  );
+
+  doc.setFontSize(9);
+
+  doc.setTextColor(...gris);
+
+  doc.text(
+    "Reporte generado automáticamente por Huellitas Home",
+    15,
+    291
+  );
+
+  doc.text(
+    `Página ${i} de ${paginas}`,
+    195,
+    291,
+    {
+      align: "right"
+    }
+  );
+
+}
+
+//==========================================
+// GUARDAR PDF
+//==========================================
+
+const fecha = new Date();
+
+const nombreArchivo =
+  `Reporte_Solicitudes_${
+    fecha.getFullYear()
+  }-${
+    String(fecha.getMonth()+1).padStart(2,"0")
+  }-${
+    String(fecha.getDate()).padStart(2,"0")
+  }.pdf`;
+
+doc.save(nombreArchivo);
+
+};
+
+
+
+
+
+
+
+
+
 
   const manejarEstado = async (id, nuevoEstado) => {
     try {
