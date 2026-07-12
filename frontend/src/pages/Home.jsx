@@ -5,8 +5,7 @@ import { Search, Heart, MapPin, ArrowRight } from "lucide-react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import { obtenerMascotasDisponibles } from "../../services/mascotaService";
-
+import { obtenerMascotasDisponibles } from "../services/mascotaService";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
