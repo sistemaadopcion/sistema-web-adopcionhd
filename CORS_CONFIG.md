@@ -64,7 +64,7 @@ Si usas React con Vite, no necesitas hacer nada especial. Solo asegúrate de:
 
 ```javascript
 // En tu servicio/API cliente
-const API_URL = 'http://localhost:8080/api';
+const API_URL ='https://backend-sistema-production-b4b3.up.railway.app'   //'http://localhost:8080/api';
 
 fetch(`${API_URL}/usuarios`)
   .then(res => res.json())

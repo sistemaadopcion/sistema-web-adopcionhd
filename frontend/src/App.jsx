@@ -1,9 +1,15 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import "./App.css";
+import ListaAdmin from "./pages/admin/ListaAdmin"; 
+import Donaciones from "./pages/donaciones/Donaciones"; 
+import Voluntariado from "./pages/voluntariado/Voluntariado";
+import PagarDonacion from "./pages/donaciones/PagarDonacion";
+import FormularioVoluntariado from "./pages/voluntariado/FormularioVoluntariado";
 
 // Layout y Componentes
 import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
+import GestionVoluntariado from "./pages/admin/GestionVoluntariado";
 
 // Páginas de Autenticación
 import Login from "./pages/auth/Login";
@@ -24,7 +30,6 @@ import Usuarios from "./pages/admin/Usuarios";
 import GestionMascotas from './pages/admin/GestionMascotas';
 
 const AppContent = ({ userRole, setUserRole }) => {
-  // Estado global para gestionar la mascota seleccionada para adopción
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
 
   const handleLoginSuccess = (rol) => {
@@ -38,48 +43,52 @@ const AppContent = ({ userRole, setUserRole }) => {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar userRole={userRole} onLogout={handleLogout} />
       
-      {/* Margen superior para el Navbar fijo */}
-      <div className="main-content ">
-        <Routes>
-          {/* Ruta Raíz: Redirección inteligente basada en rol */}
-          <Route path="/" element={
-            userRole ? (
-              <Navigate to={userRole === "ADMIN" ? "/admin/dashboard" : "/dashboard"} />
-            ) : (
-              <Home />
-            )
-          } />
+      <main className="flex-grow">
+       <Routes>
+  <Route path="/" element={userRole ? (<Navigate to={userRole === "ADMIN" ? "/admin/dashboard" : "/dashboard"} />) : (<Home />)} />
+  
+  {/* Rutas Públicas */}
+  <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+  <Route path="/registro" element={<Register />} />
+  <Route path="/donaciones" element={<Donaciones />} />
+  <Route path="/donaciones/pagar" element={<PagarDonacion />} />
+  
+  {/* Ruta del Formulario de Voluntariado */}
+  <Route path="/voluntariado" element={<FormularioVoluntariado />} />
 
-          {/* Rutas Públicas */}
-          <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-          <Route path="/registro" element={<Register />} />
-          
-          {/* Rutas de Adoptante (Protegidas por rol) */}
-          <Route path="/dashboard" element={userRole ? <DashboardUsuario /> : <Navigate to="/login" />} />
-          <Route path="/mascotas" element={<Mascotas setMascotaSeleccionadaGlobal={setMascotaSeleccionada} />} />
-          <Route path="/adopcion" element={userRole ? <FormularioAdopcion mascota={mascotaSeleccionada} /> : <Navigate to="/login" />} />
-          <Route path="/mis-solicitudes" element={userRole ? <MisSolicitudes /> : <Navigate to="/login" />} />
-          <Route path="/perfil" element={userRole ? <Perfil /> : <Navigate to="/login" />} />
+  {/* Rutas de Usuario */}
+  <Route path="/dashboard" element={userRole ? <DashboardUsuario /> : <Navigate to="/login" />} />
+  <Route path="/mascotas" element={<Mascotas setMascotaSeleccionadaGlobal={setMascotaSeleccionada} />} />
+  
+  {/* RUTA CORREGIDA: Ahora acepta el idMascota dinámico en la URL */}
+  <Route path="/adopcion/:idMascota" element={userRole ? <FormularioAdopcion /> : <Navigate to="/login" />} />
+  
+  <Route path="/mis-solicitudes" element={userRole ? <MisSolicitudes /> : <Navigate to="/login" />} />
+  <Route path="/perfil" element={userRole ? <Perfil /> : <Navigate to="/login" />} />
 
-          {/* Rutas de Administrador (Protegidas por rol) */}
-          <Route path="/admin/dashboard" element={userRole === "ADMIN" ? <AdminDashboard /> : <Navigate to="/" />} />
-          <Route path="/admin/solicitudes" element={userRole === "ADMIN" ? <Solicitudes /> : <Navigate to="/" />} />
-          <Route path="/admin/usuarios" element={userRole === "ADMIN" ? <Usuarios /> : <Navigate to="/" />} />
-          <Route path="/admin/mascotas" element={userRole === "ADMIN" ? <GestionMascotas /> : <Navigate to="/" />} />
-          
-          {/* Fallback en caso de rutas inexistentes */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </div>
-    </>
+  {/* Rutas de Administrador */}
+  <Route path="/admin/dashboard" element={userRole === "ADMIN" ? <AdminDashboard /> : <Navigate to="/" />} />
+  <Route path="/admin/solicitudes" element={userRole === "ADMIN" ? <Solicitudes /> : <Navigate to="/" />} />
+  <Route path="/admin/usuarios" element={userRole === "ADMIN" ? <Usuarios /> : <Navigate to="/" />} />
+  <Route path="/admin/mascotas" element={userRole === "ADMIN" ? <GestionMascotas /> : <Navigate to="/" />} />
+  <Route path="/admin/donaciones" element={<ListaAdmin tipo="donaciones" />} />
+  <Route path="/admin/voluntarios" element={<ListaAdmin tipo="voluntarios" />} />
+  
+  <Route path="/admin/gestion-voluntarios" element={userRole === "ADMIN" ? <GestionVoluntariado /> : <Navigate to="/" />} />
+
+  <Route path="*" element={<Navigate to="/" />} />
+</Routes>
+      </main>
+
+      <Footer />
+    </div>
   );
 };
 
 const App = () => {
-  // Inicializamos el rol desde sessionStorage para persistencia al recargar
   const [userRole, setUserRole] = useState(sessionStorage.getItem("userRole") || null);
   
   return (

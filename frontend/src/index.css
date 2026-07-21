@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-can-bg text-gray-900; /* Usamos nuestra paleta crema */
+    margin: 0;
+    padding: 0;
+    padding-top: 80px; /* Tu margen superior */
+  }
+}
+
+@layer components {
+  /* Aquí pondremos nuestras clases personalizadas más adelante */
+  .main-content {
+    @apply min-h-screen w-full;
+  }
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
