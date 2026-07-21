@@ -28,7 +28,7 @@ import Solicitudes from "./pages/admin/Solicitudes";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Usuarios from "./pages/admin/Usuarios";
 import GestionMascotas from './pages/admin/GestionMascotas';
-
+import VoluntariosAdmin from "./pages/admin/VoluntariosAdmin";
 const AppContent = ({ userRole, setUserRole }) => {
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
 
@@ -80,6 +80,11 @@ const AppContent = ({ userRole, setUserRole }) => {
   <Route path="/admin/gestion-voluntarios" element={userRole === "ADMIN" ? <GestionVoluntariado /> : <Navigate to="/" />} />
 
   <Route path="*" element={<Navigate to="/" />} />
+
+  <Route
+  path="/admin/voluntarios"
+  element={<VoluntariosAdmin />}
+/>
 </Routes>
       </main>
 
