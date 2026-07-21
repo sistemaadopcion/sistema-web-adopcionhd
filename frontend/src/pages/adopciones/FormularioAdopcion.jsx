@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Heart, Home, ShieldCheck, Clock } from 'lucide-react';
 
+// URL del backend (Railway en producción, localhost en desarrollo)
+const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:8080"}/api/solicitudes-adopcion`;
 const FormularioAdopcion = () => {
   const params = useParams();
   // Capturamos el id de la mascota sin importar cómo se llame el parámetro en tu Route (idMascota o id)
@@ -22,60 +24,73 @@ const FormularioAdopcion = () => {
   });
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.aceptaCompromiso) {
-      alert("Debes aceptar el compromiso de cuidado responsable.");
+  e.preventDefault();
+
+  if (!formData.aceptaCompromiso) {
+    alert("Debes aceptar el compromiso de cuidado responsable.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const userId =
+      sessionStorage.getItem("userId") ||
+      localStorage.getItem("userId");
+
+    if (!userId) {
+      alert("⚠️ No hay sesión activa. Inicia sesión nuevamente.");
+      navigate("/login");
       return;
     }
 
-    setLoading(true);
-
-    try {
-      // 1. Obtener ID de usuario de la sesión
-      const userId = sessionStorage.getItem("userId") || localStorage.getItem("userId");
-      
-      if (!userId) {
-        alert("⚠️ No hay sesión activa. Por favor, inicia sesión nuevamente.");
-        setLoading(false);
-        navigate('/login');
-        return;
-      }
-
-      // 2. Validar que la mascota tenga un ID válido
-      if (!idMascota) {
-        alert("⚠️ Error crítico: No se reconoció el ID de la mascota en la URL.");
-        setLoading(false);
-        return;
-      }
-
-      // Creamos el payload asegurando que ambos IDs sean números enteros válidos
-      const solicitudPayload = {
-        usuario: { id: parseInt(userId, 10) },
-        mascota: { id: parseInt(idMascota, 10) },
-        tipoVivienda: formData.tipoVivienda,
-        espacioAdecuado: formData.espacioAdecuado,
-        tieneMascotas: formData.tieneMascotas,
-        motivo: formData.motivoAdopcion,
-        ocupacion: formData.ocupacionTiempo
-      };
-
-      console.log("Enviando payload al backend:", solicitudPayload);
-
-      // Petición al backend
-      await axios.post('http://localhost:8080/api/solicitudes-adopcion', solicitudPayload);
-
-      alert("¡Solicitud enviada al administrador con éxito!");
-      navigate('/mis-solicitudes');
-
-    } catch (error) {
-      console.error("Error al enviar solicitud al backend:", error);
-      const mensajeBackend = error.response?.data?.message || error.response?.data || error.message;
-      alert("Error al enviar la solicitud al servidor: " + (typeof mensajeBackend === 'object' ? JSON.stringify(mensajeBackend) : mensajeBackend));
-    } finally {
-      setLoading(false);
+    if (!idMascota) {
+      alert("⚠️ No se encontró el ID de la mascota.");
+      return;
     }
-  };
+
+    const solicitudPayload = {
+      usuario: {
+        id: Number(userId),
+      },
+      mascota: {
+        id: Number(idMascota),
+      },
+      tipoVivienda: formData.tipoVivienda,
+      espacioAdecuado: formData.espacioAdecuado,
+      observaciones: formData.tieneMascotas,
+      motivo: formData.motivoAdopcion,
+      ocupacion: formData.ocupacionTiempo,
+    };
+
+    console.log("API:", API_URL);
+    console.log("Payload:", solicitudPayload);
+
+    const response = await axios.post(API_URL, solicitudPayload);
+
+    console.log("Respuesta:", response.data);
+
+    alert("✅ Solicitud enviada correctamente.");
+    navigate("/mis-solicitudes");
+
+  } catch (error) {
+    console.error(error);
+
+    if (error.response) {
+      alert(
+        typeof error.response.data === "string"
+          ? error.response.data
+          : JSON.stringify(error.response.data)
+      );
+    } else if (error.request) {
+      alert("No se pudo conectar con el servidor.");
+    } else {
+      alert(error.message);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#fdfbf7] py-12 px-4">

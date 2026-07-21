@@ -66,14 +66,18 @@ public class UsuarioService {
         return usuarioRepository.save(usuarioExistente);
     }
 
-    // ─── Eliminar usuario ──────────────────────────────────
-    public void eliminar(Integer id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new RuntimeException(
-                    "Usuario no encontrado con ID: " + id);
-        }
-        usuarioRepository.deleteById(id);
-    }
+    // ─── Activar / Desactivar usuario ──────────────────────
+public Usuario cambiarEstado(Integer id) {
+
+    Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() ->
+                    new RuntimeException("Usuario no encontrado con ID: " + id));
+
+    // Cambia el estado: true -> false | false -> true
+    usuario.setEstado(!usuario.getEstado());
+
+    return usuarioRepository.save(usuario);
+}
 
     // ─── Listar usuarios por rol ───────────────────────────
     public List<Usuario> listarPorRol(Usuario.RolUsuario rol) {

@@ -102,4 +102,6 @@ public ResponseEntity<?> rechazar(@PathVariable Integer id, @RequestParam(requir
         solicitudService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
+
+    
 }

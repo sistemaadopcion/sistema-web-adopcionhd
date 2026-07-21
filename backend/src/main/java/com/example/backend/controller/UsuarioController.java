@@ -60,16 +60,18 @@ public class UsuarioController {
         }
     }
 
-    // ─── DELETE: Eliminar usuario ──────────────────────────
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        try {
-            usuarioService.eliminar(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    // ─── PATCH: Activar / Desactivar usuario ─────────────────────
+@PatchMapping("/{id}/estado")
+public ResponseEntity<Usuario> cambiarEstado(@PathVariable Integer id) {
+    try {
+        Usuario usuario = usuarioService.cambiarEstado(id);
+        return ResponseEntity.ok(usuario);
+    } catch (RuntimeException e) {
+        return ResponseEntity.notFound().build();
     }
+}
+
+   
 
     // ─── GET: Buscar usuario por correo ────────────────────
     @GetMapping("/correo/{correo}")
@@ -111,4 +113,6 @@ public class UsuarioController {
         }
     }
 
+
+    
 }
