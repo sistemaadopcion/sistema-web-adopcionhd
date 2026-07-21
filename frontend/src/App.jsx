@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import ListaAdmin from "./pages/admin/ListaAdmin"; // Asegúrate de que esta sea la ruta correcta donde guardaste el archivo
-// Cambia las importaciones a esto:
+import ListaAdmin from "./pages/admin/ListaAdmin"; 
 import Donaciones from "./pages/donaciones/Donaciones"; 
 import Voluntariado from "./pages/voluntariado/Voluntariado";
-// En App.jsx
 import PagarDonacion from "./pages/donaciones/PagarDonacion";
-import FormularioVoluntariado from "./pages/voluntariado/FormularioVoluntariado";// Layout y Componentes
+import FormularioVoluntariado from "./pages/voluntariado/FormularioVoluntariado";
+
+// Layout y Componentes
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import GestionVoluntariado from "./pages/admin/GestionVoluntariado";// Ajusta la ruta si tu archivo GestionVoluntariado está en otra carpeta
+import GestionVoluntariado from "./pages/admin/GestionVoluntariado";
+
 // Páginas de Autenticación
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -21,8 +22,6 @@ import FormularioAdopcion from "./pages/adopciones/FormularioAdopcion";
 import MisSolicitudes from "./pages/adopciones/MisSolicitudes";
 import Perfil from "./pages/adopciones/Perfil";
 import DashboardUsuario from "./pages/adopciones/DashboardUsuario";
-
-
 
 // Páginas de Administrador
 import Solicitudes from "./pages/admin/Solicitudes";
@@ -63,7 +62,10 @@ const AppContent = ({ userRole, setUserRole }) => {
   {/* Rutas de Usuario */}
   <Route path="/dashboard" element={userRole ? <DashboardUsuario /> : <Navigate to="/login" />} />
   <Route path="/mascotas" element={<Mascotas setMascotaSeleccionadaGlobal={setMascotaSeleccionada} />} />
-  <Route path="/adopcion" element={userRole ? <FormularioAdopcion mascota={mascotaSeleccionada} /> : <Navigate to="/login" />} />
+  
+  {/* RUTA CORREGIDA: Ahora acepta el idMascota dinámico en la URL */}
+  <Route path="/adopcion/:idMascota" element={userRole ? <FormularioAdopcion /> : <Navigate to="/login" />} />
+  
   <Route path="/mis-solicitudes" element={userRole ? <MisSolicitudes /> : <Navigate to="/login" />} />
   <Route path="/perfil" element={userRole ? <Perfil /> : <Navigate to="/login" />} />
 
@@ -75,7 +77,6 @@ const AppContent = ({ userRole, setUserRole }) => {
   <Route path="/admin/donaciones" element={<ListaAdmin tipo="donaciones" />} />
   <Route path="/admin/voluntarios" element={<ListaAdmin tipo="voluntarios" />} />
   
-  {/* Esta es la ruta para la gestión de solicitudes que creamos */}
   <Route path="/admin/gestion-voluntarios" element={userRole === "ADMIN" ? <GestionVoluntariado /> : <Navigate to="/" />} />
 
   <Route path="*" element={<Navigate to="/" />} />

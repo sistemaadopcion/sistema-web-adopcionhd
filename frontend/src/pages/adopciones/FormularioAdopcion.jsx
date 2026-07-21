@@ -1,111 +1,207 @@
-import React, { useState, useEffect } from 'react';
-import { registrarSolicitud, obtenerSolicitudesPorUsuario } from '../../services/adopcionService';
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
+import { Heart, Home, ShieldCheck, Clock } from 'lucide-react';
 
-function FormularioAdopcion({ mascota, onVolver }) {
-  // Protección: Si no hay mascota, no renderizar
-  if (!mascota) return <div style={{ textAlign: 'center', padding: '40px' }}>Cargando datos...</div>;
+const FormularioAdopcion = () => {
+  const params = useParams();
+  // Capturamos el id de la mascota sin importar cómo se llame el parámetro en tu Route (idMascota o id)
+  const idMascota = params.idMascota || params.id;
+  
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    tipoVivienda: 'CASA',
-    espacioAdecuado: 'SI',
-    otrasMascotas: '',
-    motivo: '',
-    compromiso: false
+    tipoVivienda: 'Casa',
+    espacioAdecuado: 'Si',
+    tieneMascotas: '',
+    experienciaMascotas: '',
+    motivoAdopcion: '',
+    ocupacionTiempo: '',
+    aceptaCompromiso: false
   });
-
-  const [bloqueado, setBloqueado] = useState(false);
-  const [cargando, setCargando] = useState(true);
-
-  useEffect(() => {
-    const verificarPostulacion = async () => {
-      const userId = sessionStorage.getItem("userId");
-      if (userId) {
-        try {
-          const solicitudes = await obtenerSolicitudesPorUsuario(userId);
-          // Usamos optional chaining (?.) para evitar el error si la lista está vacía
-          const yaPostulo = solicitudes?.some(s => 
-            s.mascota?.id === mascota?.id && s.estadoSolicitud === 'ENVIADA'
-          );
-          setBloqueado(yaPostulo);
-        } catch (error) {
-          console.error("Error verificando:", error);
-        }
-      }
-      setCargando(false);
-    };
-    verificarPostulacion();
-  }, [mascota]); // Dependencia actualizada
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.compromiso) {
+    
+    if (!formData.aceptaCompromiso) {
       alert("Debes aceptar el compromiso de cuidado responsable.");
       return;
     }
-    
-    const userId = sessionStorage.getItem("userId");
-    const solicitudData = {
-      ...formData,
-      observaciones: formData.otrasMascotas,
-      usuario: { id: parseInt(userId) },
-      mascota: { id: mascota.id }
-    };
+
+    setLoading(true);
 
     try {
-      await registrarSolicitud(solicitudData);
-      alert("¡Solicitud enviada exitosamente!");
-      onVolver(); 
+      // 1. Obtener ID de usuario de la sesión
+      const userId = sessionStorage.getItem("userId") || localStorage.getItem("userId");
+      
+      if (!userId) {
+        alert("⚠️ No hay sesión activa. Por favor, inicia sesión nuevamente.");
+        setLoading(false);
+        navigate('/login');
+        return;
+      }
+
+      // 2. Validar que la mascota tenga un ID válido
+      if (!idMascota) {
+        alert("⚠️ Error crítico: No se reconoció el ID de la mascota en la URL.");
+        setLoading(false);
+        return;
+      }
+
+      // Creamos el payload asegurando que ambos IDs sean números enteros válidos
+      const solicitudPayload = {
+        usuario: { id: parseInt(userId, 10) },
+        mascota: { id: parseInt(idMascota, 10) },
+        tipoVivienda: formData.tipoVivienda,
+        espacioAdecuado: formData.espacioAdecuado,
+        tieneMascotas: formData.tieneMascotas,
+        motivo: formData.motivoAdopcion,
+        ocupacion: formData.ocupacionTiempo
+      };
+
+      console.log("Enviando payload al backend:", solicitudPayload);
+
+      // Petición al backend
+      await axios.post('http://localhost:8080/api/solicitudes-adopcion', solicitudPayload);
+
+      alert("¡Solicitud enviada al administrador con éxito!");
+      navigate('/mis-solicitudes');
+
     } catch (error) {
-      alert("Error al enviar la solicitud.");
+      console.error("Error al enviar solicitud al backend:", error);
+      const mensajeBackend = error.response?.data?.message || error.response?.data || error.message;
+      alert("Error al enviar la solicitud al servidor: " + (typeof mensajeBackend === 'object' ? JSON.stringify(mensajeBackend) : mensajeBackend));
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (cargando) return <div style={{ textAlign: 'center', padding: '40px' }}>Verificando disponibilidad...</div>;
-
   return (
-    <div style={{ maxWidth: '650px', margin: '40px auto', padding: '40px', background: '#ffffff', borderRadius: '30px', boxShadow: '0 20px 40px -15px rgba(0,0,0,0.1)', border: '1px solid #f1f5f9' }}>
-      <h2 style={{ color: '#0f172a', fontSize: '2.5rem', marginBottom: '10px' }}>Adoptar a {mascota.nombre} 🐾</h2>
-      <p style={{ color: '#64748b', marginBottom: '30px' }}>Completa el formulario para que el administrador pueda revisar tu solicitud.</p>
-      
-      {bloqueado ? (
-        <div style={{ padding: '30px', background: '#f8fafc', borderRadius: '20px', textAlign: 'center' }}>
-          <p style={{ color: '#1e293b', fontWeight: 'bold' }}>Ya has solicitado esta adopción.</p>
-          <button onClick={onVolver} style={{ marginTop: '20px', padding: '12px 25px', background: '#0f172a', color: 'white', borderRadius: '12px', cursor: 'pointer', border: 'none' }}>Regresar</button>
+    <div className="min-h-screen bg-[#fdfbf7] py-12 px-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl border border-slate-100 p-8 md:p-12">
+        
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 flex items-center justify-center gap-2">
+            Solicitud de Adopción <Heart className="text-orange-500 fill-orange-500" size={28} />
+          </h1>
+          <p className="text-slate-500 text-sm mt-2">
+            Completa este formulario detallado para evaluar tu solicitud. (Mascota ID: {idMascota || "No detectado"})
+          </p>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '600', color: '#475569' }}>
-              Tipo de vivienda:
-              <select onChange={(e) => setFormData({...formData, tipoVivienda: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <option value="CASA">Casa</option>
-                <option value="DEPARTAMENTO">Departamento</option>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-500 mb-2 flex items-center gap-1">
+                <Home size={16} className="text-orange-500" /> Tipo de vivienda:
+              </label>
+              <select 
+                value={formData.tipoVivienda}
+                onChange={(e) => setFormData({...formData, tipoVivienda: e.target.value})}
+                className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 text-slate-700 font-medium"
+              >
+                <option value="Casa">Casa propia o alquilada con patio</option>
+                <option value="Departamento">Departamento</option>
+                <option value="Finca">Finca / Casa de campo</option>
               </select>
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '600', color: '#475569' }}>
-              ¿Tienes espacio adecuado?
-              <div style={{ display: 'flex', gap: '20px', padding: '10px 0' }}>
-                <label><input type="radio" value="SI" checked={formData.espacioAdecuado === "SI"} onChange={(e) => setFormData({...formData, espacioAdecuado: e.target.value})} /> Sí</label>
-                <label><input type="radio" value="NO" checked={formData.espacioAdecuado === "NO"} onChange={(e) => setFormData({...formData, espacioAdecuado: e.target.value})} /> No</label>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-500 mb-2 flex items-center gap-1">
+                <ShieldCheck size={16} className="text-orange-500" /> ¿Espacio adecuado?
+              </label>
+              <div className="flex gap-6 pt-3">
+                <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                  <input 
+                    type="radio" 
+                    name="espacio" 
+                    value="Si" 
+                    checked={formData.espacioAdecuado === 'Si'}
+                    onChange={(e) => setFormData({...formData, espacioAdecuado: e.target.value})}
+                    className="accent-orange-500 w-4 h-4"
+                  /> Sí
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                  <input 
+                    type="radio" 
+                    name="espacio" 
+                    value="No" 
+                    checked={formData.espacioAdecuado === 'No'}
+                    onChange={(e) => setFormData({...formData, espacioAdecuado: e.target.value})}
+                    className="accent-orange-500 w-4 h-4"
+                  /> No
+                </label>
               </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase text-slate-500 mb-2 flex items-center gap-1">
+              <Clock size={16} className="text-orange-500" /> ¿Cuánto tiempo pasa sola la mascota en casa al día?
+            </label>
+            <input 
+              type="text" 
+              required
+              placeholder="Ej. Máximo 4 horas..."
+              value={formData.ocupacionTiempo}
+              onChange={(e) => setFormData({...formData, ocupacionTiempo: e.target.value})}
+              className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 text-slate-700"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase text-slate-500 mb-2">
+              ¿Tienes otras mascotas actualmente? Cuéntanos cuáles y su temperamento:
+            </label>
+            <textarea 
+              rows="2"
+              required
+              placeholder="Ej. Ninguna..."
+              value={formData.tieneMascotas}
+              onChange={(e) => setFormData({...formData, tieneMascotas: e.target.value})}
+              className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 text-slate-700 resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase text-slate-500 mb-2">
+              ¿Por qué quieres adoptar a esta mascota y cómo planeas integrarla a tu familia?
+            </label>
+            <textarea 
+              rows="3"
+              required
+              placeholder="Cuéntanos tus motivaciones..."
+              value={formData.motivoAdopcion}
+              onChange={(e) => setFormData({...formData, motivoAdopcion: e.target.value})}
+              className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 text-slate-700 resize-none"
+            />
+          </div>
+
+          <div className="flex items-start gap-3 bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
+            <input 
+              type="checkbox" 
+              id="compromiso"
+              checked={formData.aceptaCompromiso}
+              onChange={(e) => setFormData({...formData, aceptaCompromiso: e.target.checked})}
+              className="mt-1 accent-orange-600 w-5 h-5 rounded cursor-pointer"
+            />
+            <label htmlFor="compromiso" className="text-sm text-slate-700 cursor-pointer font-medium">
+              Acepto el compromiso de cuidado responsable, alimentación adecuada, visitas al veterinario y brindar un hogar seguro de por vida.
             </label>
           </div>
-          
-          <textarea placeholder="¿Tienes otras mascotas? Cuéntanos..." onChange={(e) => setFormData({...formData, otrasMascotas: e.target.value})} style={{ padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', minHeight: '80px' }} />
-          <textarea placeholder="¿Por qué quieres adoptar a esta mascota?" required onChange={(e) => setFormData({...formData, motivo: e.target.value})} style={{ padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', minHeight: '120px' }} />
-          
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#475569' }}>
-            <input type="checkbox" required onChange={(e) => setFormData({...formData, compromiso: e.target.checked})} />
-            Acepto el compromiso de cuidado responsable.
-          </label>
-          
-          <button type="submit" style={{ padding: '20px', background: '#0f172a', color: 'white', borderRadius: '16px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '10px' }}>
-            Enviar Solicitud al Administrador
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold hover:bg-slate-800 transition shadow-lg flex items-center justify-center gap-2 text-lg"
+          >
+            {loading ? 'Enviando solicitud...' : 'Enviar Solicitud al Administrador'}
           </button>
         </form>
-      )}
+      </div>
     </div>
   );
-}
+};
 
 export default FormularioAdopcion;

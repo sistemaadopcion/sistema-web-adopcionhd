@@ -39,12 +39,19 @@ function Mascotas({ setMascotaSeleccionadaGlobal }) {
     });
   }, [mascotas, busqueda, especie]);
 
-  if (loading) return <div style={styles.loader}>Cargando... 🐾</div>;
-
   if (mascotaSeleccionada) {
-    return <DetalleMascota mascota={mascotaSeleccionada} onVolver={() => setMascotaSeleccionada(null)} onSolicitarAdopcion={(m) => { setMascotaSeleccionadaGlobal(m); navigate('/adopcion'); }} />;
+    return (
+      <DetalleMascota 
+        mascota={mascotaSeleccionada} 
+        onVolver={() => setMascotaSeleccionada(null)} 
+        onSolicitarAdopcion={(m) => { 
+          setMascotaSeleccionadaGlobal(m); 
+          // 🎯 AQUÍ ESTÁ EL CAMBIO CLAVE: Pasamos el id de la mascota en la URL
+          navigate(`/adopcion/${m.id}`); 
+        }} 
+      />
+    );
   }
-
   return (
     <div style={styles.pageContainer}>
       <header style={styles.header}>
