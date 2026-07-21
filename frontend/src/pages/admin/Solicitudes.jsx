@@ -25,337 +25,245 @@ const Solicitudes = () => {
     }
   };
 
-const generarReportePDF = () => {
+  const generarReportePDF = () => {
+    if (!solicitudes || solicitudes.length === 0) {
+      alert("No existen solicitudes para generar el reporte.");
+      return;
+    }
 
-  if (!solicitudes || solicitudes.length === 0) {
-    alert("No existen solicitudes para generar el reporte.");
-    return;
-  }
+    const doc = new jsPDF("p", "mm", "a4");
 
-  const doc = new jsPDF("p", "mm", "a4");
+    //==========================
+    // COLORES
+    //==========================
 
-  //==========================
-  // COLORES
-  //==========================
+    const azul = [15, 23, 42];
+    const naranja = [249, 115, 22];
+    const gris = [100, 116, 139];
 
-  const azul = [15, 23, 42];
-  const naranja = [249, 115, 22];
-  const gris = [100, 116, 139];
+    //==========================
+    // ENCABEZADO
+    //==========================
 
-  //==========================
-  // ENCABEZADO
-  //==========================
+    doc.setFillColor(...azul);
+    doc.rect(0, 0, 210, 35, "F");
 
-  doc.setFillColor(...azul);
-  doc.rect(0, 0, 210, 35, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
 
-  doc.setTextColor(255,255,255);
-  doc.setFont("helvetica","bold");
-  doc.setFontSize(22);
+    doc.text("CAN MARTÍN", 105, 15, { align: "center" });
 
-  doc.text("CAN MARTÍN",105,15,{align:"center"});
+    doc.setFontSize(12);
 
-  doc.setFontSize(12);
+    doc.text("Sistema de Gestión de Adopciones", 105, 24, { align: "center" });
 
-  doc.text(
-      "Sistema de Gestión de Adopciones",
-      105,
-      24,
-      {align:"center"}
-  );
+    doc.setDrawColor(...naranja);
+    doc.setLineWidth(0.8);
+    doc.line(15, 40, 195, 40);
 
-  doc.setDrawColor(...naranja);
-  doc.setLineWidth(0.8);
-  doc.line(15,40,195,40);
+    //==========================
+    // TITULO
+    //==========================
 
-  //==========================
-  // TITULO
-  //==========================
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
 
-  doc.setTextColor(0,0,0);
-  doc.setFontSize(18);
-  doc.setFont("helvetica","bold");
+    doc.text("REPORTE GENERAL DE SOLICITUDES", 105, 50, { align: "center" });
 
-  doc.text(
-      "REPORTE GENERAL DE SOLICITUDES",
-      105,
-      50,
-      {align:"center"}
-  );
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
 
-  doc.setFontSize(10);
-  doc.setFont("helvetica","normal");
-
-  doc.text(
+    doc.text(
       `Fecha de generación: ${new Date().toLocaleDateString("es-PE")}`,
       15,
-      60
-  );
+      60,
+    );
 
-  doc.text(
-      `Hora: ${new Date().toLocaleTimeString("es-PE")}`,
-      15,
-      66
-  );
+    doc.text(`Hora: ${new Date().toLocaleTimeString("es-PE")}`, 15, 66);
 
-  doc.text(
-      `Sistema: Can Martín `,
-      15,
-      72
-  );
+    doc.text(`Sistema: Can Martín `, 15, 72);
 
-  //==========================
-  // ESTADÍSTICAS
-  //==========================
+    //==========================
+    // ESTADÍSTICAS
+    //==========================
 
-  const pendientes =
-      solicitudes.filter(
-          s => s.estadoSolicitud==="ENVIADA"
-      ).length;
+    const pendientes = solicitudes.filter(
+      (s) => s.estadoSolicitud === "ENVIADA",
+    ).length;
 
-  const aprobadas =
-      solicitudes.filter(
-          s => s.estadoSolicitud==="APROBADA"
-      ).length;
+    const aprobadas = solicitudes.filter(
+      (s) => s.estadoSolicitud === "APROBADA",
+    ).length;
 
-  const denegadas =
-      solicitudes.filter(
-          s => s.estadoSolicitud==="DENEGADA"
-      ).length;
+    const denegadas = solicitudes.filter(
+      (s) => s.estadoSolicitud === "DENEGADA",
+    ).length;
 
-  const total = solicitudes.length;
+    const total = solicitudes.length;
 
-//==========================================
-// TARJETAS DE RESUMEN
-//==========================================
+    //==========================================
+    // TARJETAS DE RESUMEN
+    //==========================================
 
-const dibujarCard = (
-  x,
-  y,
-  titulo,
-  valor,
-  color
-) => {
+    const dibujarCard = (x, y, titulo, valor, color) => {
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(x, y, 40, 22, 3, 3, "F");
 
-  doc.setFillColor(248,250,252);
-  doc.roundedRect(x, y, 40, 22, 3, 3, "F");
+      doc.setDrawColor(...color);
+      doc.setLineWidth(1.2);
+      doc.roundedRect(x, y, 40, 22, 3, 3);
 
-  doc.setDrawColor(...color);
-  doc.setLineWidth(1.2);
-  doc.roundedRect(x, y, 40, 22, 3, 3);
+      doc.setTextColor(...gris);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
 
-  doc.setTextColor(...gris);
-  doc.setFontSize(9);
-  doc.setFont("helvetica","normal");
+      doc.text(titulo, x + 20, y + 8, {
+        align: "center",
+      });
 
-  doc.text(titulo, x + 20, y + 8, {
-    align: "center"
-  });
+      doc.setTextColor(...color);
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
 
-  doc.setTextColor(...color);
-  doc.setFontSize(16);
-  doc.setFont("helvetica","bold");
+      doc.text(valor.toString(), x + 20, y + 17, {
+        align: "center",
+      });
+    };
 
-  doc.text(
-    valor.toString(),
-    x + 20,
-    y + 17,
-    {
-      align: "center"
+    dibujarCard(15, 82, "TOTAL", total, azul);
+
+    dibujarCard(60, 82, "PENDIENTES", pendientes, [245, 158, 11]);
+
+    dibujarCard(105, 82, "APROBADAS", aprobadas, [22, 163, 74]);
+
+    dibujarCard(150, 82, "DENEGADAS", denegadas, [220, 38, 38]);
+
+    //==========================================
+    // TÍTULO DE LA TABLA
+    //==========================================
+
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...azul);
+
+    doc.text("Detalle de Solicitudes", 15, 118);
+
+    //==========================================
+    // TABLA DE SOLICITUDES
+    //==========================================
+
+    autoTable(doc, {
+      startY: 123,
+
+      head: [["ID", "Adoptante", "Mascota", "Vivienda", "Estado", "Fecha"]],
+
+      body: solicitudes.map((s) => [
+        s.id,
+
+        s.usuario?.nombre || "N/A",
+
+        s.mascota?.nombre || "N/A",
+
+        s.tipoVivienda || "-",
+
+        s.estadoSolicitud,
+
+        s.fechaSolicitud
+          ? new Date(s.fechaSolicitud).toLocaleDateString("es-PE")
+          : "-",
+      ]),
+
+      theme: "grid",
+
+      styles: {
+        fontSize: 9,
+        cellPadding: 4,
+        valign: "middle",
+        halign: "center",
+        lineColor: [220, 220, 220],
+        lineWidth: 0.2,
+      },
+
+      headStyles: {
+        fillColor: azul,
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        halign: "center",
+      },
+
+      alternateRowStyles: {
+        fillColor: [248, 250, 252],
+      },
+
+      bodyStyles: {
+        textColor: [60, 60, 60],
+      },
+
+      margin: {
+        left: 15,
+        right: 15,
+      },
+    });
+
+    //==========================================
+    // PIE DE PÁGINA
+    //==========================================
+
+    const paginas = doc.getNumberOfPages();
+
+    for (let i = 1; i <= paginas; i++) {
+      doc.setPage(i);
+
+      doc.setDrawColor(...naranja);
+
+      doc.line(15, 285, 195, 285);
+
+      doc.setFontSize(9);
+
+      doc.setTextColor(...gris);
+
+      doc.text("Reporte generado automáticamente por Huellitas Home", 15, 291);
+
+      doc.text(`Página ${i} de ${paginas}`, 195, 291, {
+        align: "right",
+      });
     }
-  );
 
-};
+    //==========================================
+    // GUARDAR PDF
+    //==========================================
 
-dibujarCard(
-  15,
-  82,
-  "TOTAL",
-  total,
-  azul
-);
+    const fecha = new Date();
 
-dibujarCard(
-  60,
-  82,
-  "PENDIENTES",
-  pendientes,
-  [245,158,11]
-);
+    const nombreArchivo = `Reporte_Solicitudes_${fecha.getFullYear()}-${String(
+      fecha.getMonth() + 1,
+    ).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}.pdf`;
 
-dibujarCard(
-  105,
-  82,
-  "APROBADAS",
-  aprobadas,
-  [22,163,74]
-);
-
-dibujarCard(
-  150,
-  82,
-  "DENEGADAS",
-  denegadas,
-  [220,38,38]
-);
-
-//==========================================
-// TÍTULO DE LA TABLA
-//==========================================
-
-doc.setFontSize(13);
-doc.setFont("helvetica","bold");
-doc.setTextColor(...azul);
-
-doc.text(
-  "Detalle de Solicitudes",
-  15,
-  118
-);
-
-//==========================================
-// TABLA DE SOLICITUDES
-//==========================================
-
-autoTable(doc, {
-  startY: 123,
-
-  head: [[
-    "ID",
-    "Adoptante",
-    "Mascota",
-    "Vivienda",
-    "Estado",
-    "Fecha"
-  ]],
-
-  body: solicitudes.map((s) => [
-
-    s.id,
-
-    s.usuario?.nombre || "N/A",
-
-    s.mascota?.nombre || "N/A",
-
-    s.tipoVivienda || "-",
-
-    s.estadoSolicitud,
-
-    s.fechaSolicitud
-      ? new Date(s.fechaSolicitud).toLocaleDateString("es-PE")
-      : "-"
-
-  ]),
-
-  theme: "grid",
-
-  styles: {
-    fontSize: 9,
-    cellPadding: 4,
-    valign: "middle",
-    halign: "center",
-    lineColor: [220,220,220],
-    lineWidth: 0.2
-  },
-
-  headStyles: {
-    fillColor: azul,
-    textColor: [255,255,255],
-    fontStyle: "bold",
-    halign: "center"
-  },
-
-  alternateRowStyles: {
-    fillColor: [248,250,252]
-  },
-
-  bodyStyles: {
-    textColor: [60,60,60]
-  },
-
-  margin: {
-    left: 15,
-    right: 15
-  }
-});
-
-//==========================================
-// PIE DE PÁGINA
-//==========================================
-
-const paginas = doc.getNumberOfPages();
-
-for (let i = 1; i <= paginas; i++) {
-
-  doc.setPage(i);
-
-  doc.setDrawColor(...naranja);
-
-  doc.line(
-    15,
-    285,
-    195,
-    285
-  );
-
-  doc.setFontSize(9);
-
-  doc.setTextColor(...gris);
-
-  doc.text(
-    "Reporte generado automáticamente por Huellitas Home",
-    15,
-    291
-  );
-
-  doc.text(
-    `Página ${i} de ${paginas}`,
-    195,
-    291,
-    {
-      align: "right"
-    }
-  );
-
-}
-
-//==========================================
-// GUARDAR PDF
-//==========================================
-
-const fecha = new Date();
-
-const nombreArchivo =
-  `Reporte_Solicitudes_${
-    fecha.getFullYear()
-  }-${
-    String(fecha.getMonth()+1).padStart(2,"0")
-  }-${
-    String(fecha.getDate()).padStart(2,"0")
-  }.pdf`;
-
-doc.save(nombreArchivo);
-
-};
-
-
-
-
-
-
-
-
-
+    doc.save(nombreArchivo);
+  };
 
   const manejarEstado = async (id, nuevoEstado) => {
-    try {
-      await actualizarEstadoSolicitud(id, nuevoEstado);
-      await cargarSolicitudes();
-      setSolicitudSeleccionada(null);
-    } catch (error) {
-      alert("Error al procesar: " + error.message);
-    }
-  };
+  try {
+    console.log("ID:", id);
+    console.log("Estado:", nuevoEstado);
+
+    const respuesta = await actualizarEstadoSolicitud(id, nuevoEstado);
+
+    console.log("Respuesta backend:", respuesta);
+
+    alert("Solicitud actualizada correctamente.");
+
+    await cargarSolicitudes();
+
+    setSolicitudSeleccionada(null);
+
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+};
 
   const getBadgeStyle = (estado) => {
     const base = {
@@ -685,6 +593,9 @@ doc.save(nombreArchivo);
                 }}
               >
                 <button
+                  onClick={() =>
+                    manejarEstado(solicitudSeleccionada.id, "APROBADA")
+                  }
                   style={{
                     flex: 1,
                     padding: "15px",
@@ -700,6 +611,9 @@ doc.save(nombreArchivo);
                 </button>
 
                 <button
+                  onClick={() =>
+                    manejarEstado(solicitudSeleccionada.id, "DENEGADA")
+                  }
                   style={{
                     flex: 1,
                     padding: "15px",
