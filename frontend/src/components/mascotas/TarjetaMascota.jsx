@@ -1,45 +1,32 @@
 import React from 'react';
 
-// 🐾 Componente reutilizable del Issue #7
+// 🐾 Componente reutilizable con estilo mejorado Can Martín
 function TarjetaMascota({ mascota, onVerDetalle }) {
   return (
-    <div 
-      style={{ 
-        backgroundColor: '#ffffff', 
-        borderRadius: '12px', 
-        boxShadow: '0 4px 15px rgba(0,0,0,0.1)', 
-        overflow: 'hidden',
-        transition: 'transform 0.2s',
-        textAlign: 'left'
-      }}
-    >
-      {/* Criterio: Imagen de la mascota (Sincronizado con la propiedad .foto de tu BD) */}
-      <img 
-        src={mascota.foto} 
-        alt={mascota.nombre} 
-        style={{ width: '100%', height: '180px', objectFit: 'cover' }} 
-      />
+    <div className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col group">
       
-      <div style={{ padding: '15px' }}>
-        {/* Criterio: Nombre y Edad */}
-        <h3 style={{ margin: '0 0 5px 0', color: '#2c3e50' }}>{mascota.nombre}</h3>
-        <p style={{ margin: '0 0 15px 0', color: '#16a085', fontWeight: '500' }}>{mascota.edad}</p>
+      {/* Imagen con un ligero zoom al hacer hover */}
+      <div className="relative overflow-hidden h-48">
+        <img 
+          src={mascota.foto} 
+          alt={mascota.nombre} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+        />
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-can-secondary">
+          {mascota.edad}
+        </div>
+      </div>
+      
+      <div className="p-6 flex flex-col flex-grow">
+        {/* Nombre */}
+        <h3 className="text-xl font-bold text-can-secondary mb-4">{mascota.nombre}</h3>
         
-        {/* Criterio: Botón "Ver detalle" */}
+        {/* Botón de acción con los colores de marca */}
         <button 
           onClick={() => onVerDetalle(mascota.id)}
-          style={{ 
-            width: '100%', 
-            padding: '10px', 
-            backgroundColor: '#3498db', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '6px', 
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
+          className="mt-auto w-full py-3 bg-can-primary hover:bg-orange-600 text-white font-bold rounded-2xl transition-colors duration-300 shadow-sm"
         >
-          Ver detalle
+          Conocer más
         </button>
       </div>
     </div>

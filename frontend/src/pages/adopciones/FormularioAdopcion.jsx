@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { registrarSolicitud, obtenerSolicitudesPorUsuario } from '../../services/adopcionService';
 
 function FormularioAdopcion({ mascota, onVolver }) {
+  // Protección: Si no hay mascota, no renderizar
+  if (!mascota) return <div style={{ textAlign: 'center', padding: '40px' }}>Cargando datos...</div>;
+
   const [formData, setFormData] = useState({
     tipoVivienda: 'CASA',
     espacioAdecuado: 'SI',
@@ -13,30 +16,28 @@ function FormularioAdopcion({ mascota, onVolver }) {
   const [bloqueado, setBloqueado] = useState(false);
   const [cargando, setCargando] = useState(true);
 
-  // Validar si el usuario ya envió una solicitud para esta mascota al cargar
   useEffect(() => {
     const verificarPostulacion = async () => {
       const userId = sessionStorage.getItem("userId");
       if (userId) {
         try {
           const solicitudes = await obtenerSolicitudesPorUsuario(userId);
-          const yaPostulo = solicitudes.some(s => 
-            s.mascota.id === mascota.id && s.estadoSolicitud === 'ENVIADA'
+          // Usamos optional chaining (?.) para evitar el error si la lista está vacía
+          const yaPostulo = solicitudes?.some(s => 
+            s.mascota?.id === mascota?.id && s.estadoSolicitud === 'ENVIADA'
           );
           setBloqueado(yaPostulo);
         } catch (error) {
-          console.error("Error verificando postulaciones:", error);
+          console.error("Error verificando:", error);
         }
       }
       setCargando(false);
     };
     verificarPostulacion();
-  }, [mascota.id]);
+  }, [mascota]); // Dependencia actualizada
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (bloqueado) return;
-
     if (!formData.compromiso) {
       alert("Debes aceptar el compromiso de cuidado responsable.");
       return;
@@ -44,9 +45,7 @@ function FormularioAdopcion({ mascota, onVolver }) {
     
     const userId = sessionStorage.getItem("userId");
     const solicitudData = {
-      tipoVivienda: formData.tipoVivienda,
-      espacioAdecuado: formData.espacioAdecuado,
-      motivo: formData.motivo,
+      ...formData,
       observaciones: formData.otrasMascotas,
       usuario: { id: parseInt(userId) },
       mascota: { id: mascota.id }
@@ -54,56 +53,54 @@ function FormularioAdopcion({ mascota, onVolver }) {
 
     try {
       await registrarSolicitud(solicitudData);
-      alert("¡Solicitud enviada correctamente!");
+      alert("¡Solicitud enviada exitosamente!");
       onVolver(); 
     } catch (error) {
-      if (error.message.includes("409") || error.message.includes("Ya tienes")) {
-        alert("Ya tienes una solicitud enviada para esta mascota. Espera a que sea revisada.");
-      } else {
-        alert("Error al enviar la solicitud. Verifica que la mascota esté disponible.");
-      }
+      alert("Error al enviar la solicitud.");
     }
   };
 
-  if (cargando) return <div style={{ textAlign: 'center', padding: '40px' }}>Cargando disponibilidad...</div>;
+  if (cargando) return <div style={{ textAlign: 'center', padding: '40px' }}>Verificando disponibilidad...</div>;
 
   return (
-    <div style={{ maxWidth: '600px', margin: '40px auto', padding: '40px', background: '#ffffff', borderRadius: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-      <h2 style={{ color: '#0f172a', marginBottom: '10px', fontSize: '2rem' }}>Adoptar a {mascota?.nombre} 🐾</h2>
+    <div style={{ maxWidth: '650px', margin: '40px auto', padding: '40px', background: '#ffffff', borderRadius: '30px', boxShadow: '0 20px 40px -15px rgba(0,0,0,0.1)', border: '1px solid #f1f5f9' }}>
+      <h2 style={{ color: '#0f172a', fontSize: '2.5rem', marginBottom: '10px' }}>Adoptar a {mascota.nombre} 🐾</h2>
+      <p style={{ color: '#64748b', marginBottom: '30px' }}>Completa el formulario para que el administrador pueda revisar tu solicitud.</p>
       
       {bloqueado ? (
-        <div style={{ padding: '20px', background: '#fef3c7', color: '#92400e', borderRadius: '12px', textAlign: 'center', marginTop: '20px' }}>
-          <p><strong>¡Ya has enviado una solicitud para {mascota?.nombre}!</strong></p>
-          <p>Por favor, espera a que el administrador revise tu postulación.</p>
-          <button onClick={onVolver} style={{ marginTop: '15px', padding: '10px 20px', cursor: 'pointer', borderRadius: '8px', border: 'none', background: '#e2e8f0' }}>Volver</button>
+        <div style={{ padding: '30px', background: '#f8fafc', borderRadius: '20px', textAlign: 'center' }}>
+          <p style={{ color: '#1e293b', fontWeight: 'bold' }}>Ya has solicitado esta adopción.</p>
+          <button onClick={onVolver} style={{ marginTop: '20px', padding: '12px 25px', background: '#0f172a', color: 'white', borderRadius: '12px', cursor: 'pointer', border: 'none' }}>Regresar</button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: '#334155', fontWeight: '600' }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '600', color: '#475569' }}>
               Tipo de vivienda:
-              <select value={formData.tipoVivienda} onChange={(e) => setFormData({ ...formData, tipoVivienda: e.target.value })} style={{ padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+              <select onChange={(e) => setFormData({...formData, tipoVivienda: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                 <option value="CASA">Casa</option>
                 <option value="DEPARTAMENTO">Departamento</option>
-                <option value="OTRO">Otro</option>
               </select>
             </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: '#334155', fontWeight: '600' }}>
-              ¿Tiene espacio adecuado?
-              <div style={{ display: 'flex', gap: '15px', paddingTop: '10px' }}>
-                <label><input type="radio" name="espacio" value="SI" checked={formData.espacioAdecuado === "SI"} onChange={(e) => setFormData({ ...formData, espacioAdecuado: e.target.value })} /> Sí</label>
-                <label><input type="radio" name="espacio" value="NO" checked={formData.espacioAdecuado === "NO"} onChange={(e) => setFormData({ ...formData, espacioAdecuado: e.target.value })} /> No</label>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '600', color: '#475569' }}>
+              ¿Tienes espacio adecuado?
+              <div style={{ display: 'flex', gap: '20px', padding: '10px 0' }}>
+                <label><input type="radio" value="SI" checked={formData.espacioAdecuado === "SI"} onChange={(e) => setFormData({...formData, espacioAdecuado: e.target.value})} /> Sí</label>
+                <label><input type="radio" value="NO" checked={formData.espacioAdecuado === "NO"} onChange={(e) => setFormData({...formData, espacioAdecuado: e.target.value})} /> No</label>
               </div>
             </label>
           </div>
-          <textarea placeholder="¿Tienes otras mascotas actualmente?" value={formData.otrasMascotas} onChange={(e) => setFormData({ ...formData, otrasMascotas: e.target.value })} style={{ padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0', minHeight: '80px' }} />
-          <textarea placeholder="Motivo de adopción" required value={formData.motivo} onChange={(e) => setFormData({ ...formData, motivo: e.target.value })} style={{ padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0', minHeight: '100px' }} />
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#475569', fontSize: '0.95rem' }}>
-            <input type="checkbox" checked={formData.compromiso} onChange={(e) => setFormData({ ...formData, compromiso: e.target.checked })} />
+          
+          <textarea placeholder="¿Tienes otras mascotas? Cuéntanos..." onChange={(e) => setFormData({...formData, otrasMascotas: e.target.value})} style={{ padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', minHeight: '80px' }} />
+          <textarea placeholder="¿Por qué quieres adoptar a esta mascota?" required onChange={(e) => setFormData({...formData, motivo: e.target.value})} style={{ padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', minHeight: '120px' }} />
+          
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#475569' }}>
+            <input type="checkbox" required onChange={(e) => setFormData({...formData, compromiso: e.target.checked})} />
             Acepto el compromiso de cuidado responsable.
           </label>
-          <button type="submit" style={{ padding: '15px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>
-            Enviar Solicitud
+          
+          <button type="submit" style={{ padding: '20px', background: '#0f172a', color: 'white', borderRadius: '16px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '10px' }}>
+            Enviar Solicitud al Administrador
           </button>
         </form>
       )}

@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import "./App.css";
-
-// Layout y Componentes
+import ListaAdmin from "./pages/admin/ListaAdmin"; // Asegúrate de que esta sea la ruta correcta donde guardaste el archivo
+// Cambia las importaciones a esto:
+import Donaciones from "./pages/donaciones/Donaciones"; 
+import Voluntariado from "./pages/voluntariado/Voluntariado";
+// En App.jsx
+import PagarDonacion from "./pages/donaciones/PagarDonacion";
+import FormularioVoluntariado from "./pages/voluntariado/FormularioVoluntariado";// Layout y Componentes
 import Navbar from "./components/layout/Navbar";
-
+import Footer from "./components/layout/Footer";
+import GestionVoluntariado from "./pages/admin/GestionVoluntariado";// Ajusta la ruta si tu archivo GestionVoluntariado está en otra carpeta
 // Páginas de Autenticación
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -17,6 +22,8 @@ import MisSolicitudes from "./pages/adopciones/MisSolicitudes";
 import Perfil from "./pages/adopciones/Perfil";
 import DashboardUsuario from "./pages/adopciones/DashboardUsuario";
 
+
+
 // Páginas de Administrador
 import Solicitudes from "./pages/admin/Solicitudes";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -24,7 +31,6 @@ import Usuarios from "./pages/admin/Usuarios";
 import GestionMascotas from './pages/admin/GestionMascotas';
 
 const AppContent = ({ userRole, setUserRole }) => {
-  // Estado global para gestionar la mascota seleccionada para adopción
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
 
   const handleLoginSuccess = (rol) => {
@@ -38,48 +44,50 @@ const AppContent = ({ userRole, setUserRole }) => {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar userRole={userRole} onLogout={handleLogout} />
       
-      {/* Margen superior para el Navbar fijo */}
-      <div className="main-content ">
-        <Routes>
-          {/* Ruta Raíz: Redirección inteligente basada en rol */}
-          <Route path="/" element={
-            userRole ? (
-              <Navigate to={userRole === "ADMIN" ? "/admin/dashboard" : "/dashboard"} />
-            ) : (
-              <Home />
-            )
-          } />
+      <main className="flex-grow">
+       <Routes>
+  <Route path="/" element={userRole ? (<Navigate to={userRole === "ADMIN" ? "/admin/dashboard" : "/dashboard"} />) : (<Home />)} />
+  
+  {/* Rutas Públicas */}
+  <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+  <Route path="/registro" element={<Register />} />
+  <Route path="/donaciones" element={<Donaciones />} />
+  <Route path="/donaciones/pagar" element={<PagarDonacion />} />
+  
+  {/* Ruta del Formulario de Voluntariado */}
+  <Route path="/voluntariado" element={<FormularioVoluntariado />} />
 
-          {/* Rutas Públicas */}
-          <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-          <Route path="/registro" element={<Register />} />
-          
-          {/* Rutas de Adoptante (Protegidas por rol) */}
-          <Route path="/dashboard" element={userRole ? <DashboardUsuario /> : <Navigate to="/login" />} />
-          <Route path="/mascotas" element={<Mascotas setMascotaSeleccionadaGlobal={setMascotaSeleccionada} />} />
-          <Route path="/adopcion" element={userRole ? <FormularioAdopcion mascota={mascotaSeleccionada} /> : <Navigate to="/login" />} />
-          <Route path="/mis-solicitudes" element={userRole ? <MisSolicitudes /> : <Navigate to="/login" />} />
-          <Route path="/perfil" element={userRole ? <Perfil /> : <Navigate to="/login" />} />
+  {/* Rutas de Usuario */}
+  <Route path="/dashboard" element={userRole ? <DashboardUsuario /> : <Navigate to="/login" />} />
+  <Route path="/mascotas" element={<Mascotas setMascotaSeleccionadaGlobal={setMascotaSeleccionada} />} />
+  <Route path="/adopcion" element={userRole ? <FormularioAdopcion mascota={mascotaSeleccionada} /> : <Navigate to="/login" />} />
+  <Route path="/mis-solicitudes" element={userRole ? <MisSolicitudes /> : <Navigate to="/login" />} />
+  <Route path="/perfil" element={userRole ? <Perfil /> : <Navigate to="/login" />} />
 
-          {/* Rutas de Administrador (Protegidas por rol) */}
-          <Route path="/admin/dashboard" element={userRole === "ADMIN" ? <AdminDashboard /> : <Navigate to="/" />} />
-          <Route path="/admin/solicitudes" element={userRole === "ADMIN" ? <Solicitudes /> : <Navigate to="/" />} />
-          <Route path="/admin/usuarios" element={userRole === "ADMIN" ? <Usuarios /> : <Navigate to="/" />} />
-          <Route path="/admin/mascotas" element={userRole === "ADMIN" ? <GestionMascotas /> : <Navigate to="/" />} />
-          
-          {/* Fallback en caso de rutas inexistentes */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </div>
-    </>
+  {/* Rutas de Administrador */}
+  <Route path="/admin/dashboard" element={userRole === "ADMIN" ? <AdminDashboard /> : <Navigate to="/" />} />
+  <Route path="/admin/solicitudes" element={userRole === "ADMIN" ? <Solicitudes /> : <Navigate to="/" />} />
+  <Route path="/admin/usuarios" element={userRole === "ADMIN" ? <Usuarios /> : <Navigate to="/" />} />
+  <Route path="/admin/mascotas" element={userRole === "ADMIN" ? <GestionMascotas /> : <Navigate to="/" />} />
+  <Route path="/admin/donaciones" element={<ListaAdmin tipo="donaciones" />} />
+  <Route path="/admin/voluntarios" element={<ListaAdmin tipo="voluntarios" />} />
+  
+  {/* Esta es la ruta para la gestión de solicitudes que creamos */}
+  <Route path="/admin/gestion-voluntarios" element={userRole === "ADMIN" ? <GestionVoluntariado /> : <Navigate to="/" />} />
+
+  <Route path="*" element={<Navigate to="/" />} />
+</Routes>
+      </main>
+
+      <Footer />
+    </div>
   );
 };
 
 const App = () => {
-  // Inicializamos el rol desde sessionStorage para persistencia al recargar
   const [userRole, setUserRole] = useState(sessionStorage.getItem("userRole") || null);
   
   return (
