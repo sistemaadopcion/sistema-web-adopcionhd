@@ -21,19 +21,27 @@ export const obtenerSolicitudes = async () => {
  * Registra una nueva solicitud.
  */
 export const registrarSolicitud = async (solicitudData) => {
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(solicitudData),
-    });
-    
-    if (!response.ok) throw new Error('Error al registrar la solicitud');
-    return await response.json();
-  } catch (error) {
-    console.error("Error en registrarSolicitud:", error);
-    throw error;
+  console.log("URL:", API_URL);
+  console.log("Datos:", solicitudData);
+
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(solicitudData),
+  });
+
+  console.log("Status:", response.status);
+
+  const text = await response.text();
+  console.log("Respuesta:", text);
+
+  if (!response.ok) {
+    throw new Error(text);
   }
+
+  return JSON.parse(text);
 };
 
 /**
