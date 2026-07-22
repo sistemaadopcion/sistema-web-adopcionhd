@@ -50,7 +50,10 @@ const DashboardUsuario = () => {
             <p className="text-sm text-gray-600">Revisa el estatus más reciente de tus gestiones abiertas.</p>
           </div>
         </div>
-        <button onClick={() => navigate('/mis-solicitudes')} className="text-can-primary font-bold flex items-center hover:underline">
+        <button 
+          onClick={() => navigate('/mis-solicitudes')} 
+          className="text-can-primary font-bold flex items-center hover:underline cursor-pointer"
+        >
           Ver detalles <ChevronRight size={18}/>
         </button>
       </div>
@@ -74,7 +77,7 @@ const DashboardUsuario = () => {
         </section>
       </div>
 
-      {/* NUEVO: Carrusel de Mascotas */}
+      {/* Carrusel de Mascotas */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
         <CarruselMascotas />
       </div>
@@ -87,7 +90,7 @@ const DashboardUsuario = () => {
         </div>
         <button 
           onClick={() => navigate('/mascotas')}
-          className="bg-can-primary hover:bg-orange-600 text-white px-8 py-4 rounded-2xl font-bold transition-all flex items-center gap-2 shadow-lg"
+          className="bg-can-primary hover:bg-orange-600 text-white px-8 py-4 rounded-2xl font-bold transition-all flex items-center gap-2 shadow-lg cursor-pointer"
         >
           <PawPrint size={20} /> Ver Mascotas
         </button>

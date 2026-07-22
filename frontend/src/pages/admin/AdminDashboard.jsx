@@ -10,7 +10,7 @@ import {
   Heart,
   Users,
 } from "lucide-react";
-
+import DonacionesAdmin from './DonacionesAdmin'; // o la ruta donde esté ubicado  
 function AdminDashboard() {
   const navigate = useNavigate();
 

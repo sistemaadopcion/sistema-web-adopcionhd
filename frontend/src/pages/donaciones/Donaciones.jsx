@@ -31,13 +31,13 @@ const Donaciones = () => {
         fecha: new Date().toISOString()
       };
 
-      // Llamada real a tu endpoint de backend (opcional/ajustable según tu Spring Boot)
-      try {
-        await axios.post('http://localhost:8080/api/donaciones', payload);
-      } catch (err) {
-        console.warn("Backend no disponible temporalmente, guardando en sesión local para simulación visual.");
-      }
-
+    // Llamada real a tu endpoint de backend unificada con la nube
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || "https://backend-sistema-production-b4b3.up.railway.app";
+      await axios.post(`${API_BASE}/api/donaciones`, payload);
+    } catch (err) {
+      console.warn("Backend no disponible temporalmente, guardando en sesión local para simulación visual.");
+    }
       // Guardar en localStorage para reflejar instantáneamente el historial y la suscripción en el Perfil
       const donacionesPrevias = JSON.parse(localStorage.getItem('historialDonaciones') || '[]');
       const nuevaDonacion = {
